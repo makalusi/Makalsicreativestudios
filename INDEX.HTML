@@ -1,0 +1,3079 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head><script id="aura-preview-performance-controller">
+(function() {
+if (window.__auraPreviewPerformanceController) return;
+const nativeRequestAnimationFrame = window.requestAnimationFrame
+? window.requestAnimationFrame.bind(window)
+: function(callback) { return window.setTimeout(function() { callback(Date.now()); }, 16); };
+const nativeCancelAnimationFrame = window.cancelAnimationFrame
+? window.cancelAnimationFrame.bind(window)
+: window.clearTimeout.bind(window);
+const nativeSetInterval = window.setInterval.bind(window);
+let paused = false;
+let nextFrameId = 1;
+const frameRecords = new Map();
+const pausedFrameCallbacks = new Map();
+const style = document.createElement('style');
+style.id = 'aura-preview-performance-style';
+style.textContent = [
+'html[data-aura-preview-paused="true"] *,',
+'html[data-aura-preview-paused="true"] *::before,',
+'html[data-aura-preview-paused="true"] *::after {',
+'  animation-play-state: paused !important;',
+'  transition-duration: 0s !important;',
+'  scroll-behavior: auto !important;',
+'}'
+].join('\n');
+document.head.appendChild(style);
+window.requestAnimationFrame = function(callback) {
+const frameId = nextFrameId++;
+if (paused) {
+pausedFrameCallbacks.set(frameId, callback);
+frameRecords.set(frameId, { paused: true });
+return frameId;
+}
+const nativeFrameId = nativeRequestAnimationFrame(function(timestamp) {
+frameRecords.delete(frameId);
+callback(timestamp);
+});
+frameRecords.set(frameId, { nativeFrameId: nativeFrameId });
+return frameId;
+};
+window.cancelAnimationFrame = function(frameId) {
+const record = frameRecords.get(frameId);
+pausedFrameCallbacks.delete(frameId);
+if (record && typeof record.nativeFrameId !== 'undefined') {
+nativeCancelAnimationFrame(record.nativeFrameId);
+}
+frameRecords.delete(frameId);
+};
+window.setInterval = function(callback, delay) {
+const args = Array.prototype.slice.call(arguments, 2);
+return nativeSetInterval(function() {
+if (paused) return;
+callback.apply(this, args);
+}, delay);
+};
+const flushPausedFrames = function() {
+const callbacks = Array.from(pausedFrameCallbacks.entries());
+pausedFrameCallbacks.clear();
+callbacks.forEach(function(entry) {
+const frameId = entry[0];
+const callback = entry[1];
+const nativeFrameId = nativeRequestAnimationFrame(function(timestamp) {
+frameRecords.delete(frameId);
+callback(timestamp);
+});
+frameRecords.set(frameId, { nativeFrameId: nativeFrameId });
+});
+};
+const setPaused = function(nextPaused) {
+const shouldPause = Boolean(nextPaused);
+if (paused === shouldPause) return;
+paused = shouldPause;
+document.documentElement.toggleAttribute('data-aura-preview-paused', paused);
+if (!paused) {
+flushPausedFrames();
+}
+};
+window.__auraPreviewPerformanceController = {
+setPaused: setPaused,
+get paused() {
+return paused;
+}
+};
+window.addEventListener('message', function(event) {
+if (event.source !== window.parent) return;
+if (!event.data || event.data.type !== 'aura-preview-performance-mode') return;
+setPaused(event.data.paused);
+});
+})();
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Makalsi Creative Studio | Web Design, Brand Identity & Video Production</title>
+
+<!-- ── Core SEO ── -->
+<meta name="description" content="Makalsi Creative Studio — bold web design, brand identity, logo design, graphic design, and video production. We make brands impossible to ignore." />
+<meta name="keywords" content="web design studio, brand identity design, logo design, graphic design, web development, videography, video editing, motion design, e-commerce design, Shopify design, UI UX design, creative studio, web designer" />
+<meta name="author" content="Makalsi Creative Studio" />
+<meta name="robots" content="index, follow" />
+<link rel="canonical" href="https://makalsi.com" />
+
+<!-- ── Favicon ── -->
+<link rel="icon" type="image/svg+xml" href="Makalsi logo-01.svg" />
+<link rel="shortcut icon" href="Makalsi logo-01.svg" />
+
+<!-- ── Open Graph (WhatsApp · LinkedIn · Facebook previews) ── -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Makalsi Creative Studio" />
+<meta property="og:title" content="Makalsi Creative Studio | Web Design, Brand Identity & Video Production" />
+<meta property="og:description" content="Bold web design, brand identity, logo design, graphic design, and video production. We make brands impossible to ignore." />
+<meta property="og:url" content="https://makalsi.com" />
+<meta property="og:image" content="https://makalsi.com/og-image.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Makalsi Creative Studio — Web Design & Brand Identity" />
+<meta property="og:locale" content="en_US" />
+
+<!-- ── Twitter / X Card ── -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Makalsi Creative Studio | Web Design, Brand Identity & Video Production" />
+<meta name="twitter:description" content="Bold web design, brand identity, logo design, graphic design, and video production. We make brands impossible to ignore." />
+<meta name="twitter:image" content="https://makalsi.com/og-image.jpg" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link
+href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Inter:wght@400;500;600;700&amp;family=Caveat:wght@600;700&amp;display=swap"
+rel="stylesheet"
+/>
+<style>
+:root {
+--indigo: #4F46E5;
+--emerald: #10B981;
+--rose: #F43F5E;
+--black: #050505;
+--white: #ffffff;
+--paper: #f4efe7;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+margin: 0;
+font-family: 'Inter', sans-serif;
+background: var(--black);
+color: var(--black);
+overflow-x: hidden;
+-webkit-font-smoothing: antialiased;
+text-rendering: geometricPrecision;
+}
+.display { font-family: 'Anton', sans-serif; }
+.hand { font-family: 'Caveat', cursive; }
+::selection { background: #000; color: var(--emerald); }
+.poster-section {
+position: relative;
+min-height: 100svh;
+width: 100%;
+overflow: hidden;
+isolation: isolate;
+}
+.divider-grid::before,
+.divider-grid::after {
+content: "";
+position: absolute;
+inset: 0;
+pointer-events: none;
+z-index: 1;
+}
+.divider-grid::before {
+background-image:
+linear-gradient(to right, rgba(255,255,255,0.18) 1px, transparent 1px),
+linear-gradient(to bottom, rgba(255,255,255,0.18) 1px, transparent 1px);
+background-size: 20vw 100%, 100% 25vh;
+}
+.divider-grid.dark-lines::before {
+background-image:
+linear-gradient(to right, rgba(0,0,0,0.16) 1px, transparent 1px),
+linear-gradient(to bottom, rgba(0,0,0,0.16) 1px, transparent 1px);
+}
+.huge-word {
+font-family: 'Anton', sans-serif;
+font-size: clamp(8rem, 28vw, 30rem);
+line-height: 0.78;
+letter-spacing: -0.055em;
+white-space: nowrap;
+user-select: none;
+}
+.profile-card,
+.editorial-card {
+background: #050505;
+color: white;
+border: 1px solid rgba(255,255,255,0.16);
+box-shadow: 32px 48px 80px rgba(0,0,0,0.45);
+}
+.soft-sheen::after {
+content: "";
+position: absolute;
+inset: 0;
+pointer-events: none;
+background: linear-gradient(115deg, rgba(255,255,255,0.18), transparent 34%, rgba(0,0,0,0.32));
+mix-blend-mode: screen;
+}
+.section-label {
+position: absolute;
+left: 1.25rem;
+bottom: 1.25rem;
+z-index: 10;
+font-size: 0.72rem;
+letter-spacing: 0.18em;
+text-transform: uppercase;
+font-weight: 700;
+}
+.about-word {
+display: inline-block;
+will-change: transform, opacity;
+}
+.thin-line { border-color: rgba(255,255,255,0.32); }
+.thin-line-dark { border-color: rgba(0,0,0,0.25); }
+.manifesto-sentence {
+max-width: min(1180px, 92vw);
+display: flex;
+flex-wrap: wrap;
+align-items: center;
+justify-content: center;
+gap: 0.18em 0.28em;
+text-align: center;
+}
+.manifesto-word {
+display: inline-block;
+will-change: transform, opacity;
+font-family: 'Anton', sans-serif;
+font-size: clamp(2.4rem, 7.8vw, 7.4rem);
+line-height: 0.9;
+letter-spacing: -0.045em;
+text-transform: uppercase;
+}
+.archive-grid {
+position: relative;
+z-index: 5;
+width: min(88vw, 1120px);
+display: grid;
+grid-template-columns: repeat(5, minmax(0, 1fr));
+gap: 10px;
+will-change: transform;
+}
+.archive-img {
+width: 100%;
+aspect-ratio: 4 / 5;
+object-fit: cover;
+filter: grayscale(1) contrast(1.08) saturate(0.4);
+transform-origin: center center;
+will-change: transform, opacity;
+}
+.builder-shell {
+width: min(470px, 88vw);
+min-height: 570px;
+border: 1px solid rgba(255,255,255,0.2);
+background: #050505;
+color: white;
+box-shadow: -32px 44px 90px rgba(0,0,0,0.42);
+}
+.builder-module {
+position: relative;
+border-top: 1px solid rgba(255,255,255,0.16);
+will-change: transform, opacity;
+}
+.builder-module:first-child { border-top: 0; }
+.builder-module::before {
+content: attr(data-number);
+position: absolute;
+top: 0.9rem;
+right: 1rem;
+font-size: 0.64rem;
+letter-spacing: 0.16em;
+color: rgba(255,255,255,0.45);
+}
+.op-card {
+min-height: 158px;
+border: 1px solid rgba(255,255,255,0.2);
+background: #050505;
+color: white;
+padding: 1rem;
+display: flex;
+flex-direction: column;
+justify-content: space-between;
+box-shadow: 18px 22px 42px rgba(0,0,0,0.28);
+will-change: transform, opacity;
+}
+.support-panel {
+border: 1px solid rgba(255,255,255,0.28);
+background: #050505;
+color: white;
+min-height: 310px;
+padding: 1.25rem;
+will-change: transform, opacity;
+}
+.sweep-word {
+position: absolute;
+inset: 0;
+display: flex;
+align-items: center;
+justify-content: center;
+font-family: 'Anton', sans-serif;
+font-size: clamp(6.8rem, 26vw, 25rem);
+line-height: 0.78;
+letter-spacing: -0.055em;
+white-space: nowrap;
+opacity: 0;
+will-change: transform, opacity;
+}
+/* ======================= ON LOAD INTRO ======================= */
+body.is-loading {
+height: 100svh;
+overflow: hidden;
+}
+.noema-loader {
+position: fixed;
+inset: 0;
+z-index: 9999;
+overflow: hidden;
+background: #050505;
+color: #ffffff;
+display: flex;
+align-items: center;
+justify-content: center;
+isolation: isolate;
+}
+.loader-grid {
+position: absolute;
+inset: 0;
+opacity: 0.28;
+background-image:
+linear-gradient(to right, rgba(255,255,255,0.16) 1px, transparent 1px),
+linear-gradient(to bottom, rgba(255,255,255,0.16) 1px, transparent 1px);
+background-size: 20vw 100%, 100% 25vh;
+pointer-events: none;
+}
+.loader-mark {
+position: absolute;
+top: 1.25rem;
+left: 50%;
+transform: translateX(-50%);
+z-index: 4;
+width: 34px;
+height: 18px;
+display: flex;
+align-items: center;
+justify-content: center;
+color: white;
+opacity: 0.9;
+}
+.loader-mark svg {
+width: 34px;
+height: 18px;
+overflow: visible;
+}
+.loader-brand {
+position: relative;
+z-index: 5;
+text-align: center;
+overflow: hidden;
+padding: 0.4rem 0.6rem;
+}
+.loader-brand-main {
+display: flex;
+align-items: baseline;
+justify-content: center;
+gap: 0.015em;
+font-family: 'Anton', sans-serif;
+font-size: clamp(2.6rem, 10vw, 10rem);
+line-height: 0.78;
+letter-spacing: -0.055em;
+text-transform: uppercase;
+white-space: nowrap;
+}
+.loader-letter {
+display: inline-block;
+will-change: transform, opacity;
+}
+.loader-dot {
+color: var(--emerald);
+margin-left: 0.015em;
+}
+.loader-tag {
+margin-top: 0.75rem;
+font-size: clamp(0.72rem, 1.1vw, 0.9rem);
+letter-spacing: 0.18em;
+text-transform: uppercase;
+color: rgba(255,255,255,0.62);
+will-change: transform, opacity;
+}
+.loader-meta {
+position: absolute;
+left: 1.25rem;
+right: 1.25rem;
+bottom: 1.25rem;
+z-index: 5;
+display: flex;
+justify-content: space-between;
+align-items: flex-end;
+gap: 1rem;
+font-size: 0.68rem;
+letter-spacing: 0.18em;
+text-transform: uppercase;
+color: rgba(255,255,255,0.62);
+will-change: transform, opacity;
+}
+.loader-strips {
+position: absolute;
+inset: 0;
+z-index: 3;
+display: grid;
+grid-template-columns: repeat(7, minmax(0, 1fr));
+align-items: end;
+pointer-events: none;
+}
+.loader-strip {
+height: 100%;
+transform: scaleY(0);
+transform-origin: bottom;
+border-right: 1px solid rgba(0,0,0,0.12);
+will-change: transform;
+}
+.loader-strip:nth-child(1) { background: var(--paper); }
+.loader-strip:nth-child(2) { background: var(--indigo); }
+.loader-strip:nth-child(3) { background: #ffffff; }
+.loader-strip:nth-child(4) { background: var(--emerald); }
+.loader-strip:nth-child(5) { background: var(--rose); }
+.loader-strip:nth-child(6) { background: #ffffff; }
+.loader-strip:nth-child(7) { background: var(--paper); }
+.loader-scanline {
+position: absolute;
+left: 0;
+right: 0;
+bottom: 0;
+z-index: 6;
+height: 1px;
+background: rgba(255,255,255,0.8);
+transform-origin: left;
+transform: scaleX(0);
+will-change: transform;
+}
+@media (max-width: 768px) {
+.huge-word {
+font-size: clamp(5.5rem, 37vw, 14rem);
+letter-spacing: -0.065em;
+}
+.archive-grid {
+width: 92vw;
+grid-template-columns: repeat(3, minmax(0, 1fr));
+gap: 6px;
+}
+.builder-shell { min-height: auto; }
+.section-label { left: 1rem; bottom: 1rem; }
+.poster-section { min-height: 100svh; }
+}
+</style>
+<style>
+@media (min-width: 768px) {
+.poster-section {
+min-height: auto !important;
+height: 100svh !important;
+max-height: 1080px !important;
+}
+}
+</style><!-- aura-ga4-start -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2M6V79H761"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-2M6V79H761');
+</script>
+<!-- aura-ga4-end -->
+
+<!-- ── JSON-LD Structured Data ── -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "Makalsi Creative Studio",
+  "alternateName": "Makalsi",
+  "description": "Full-service creative studio specialising in web design, brand identity, logo design, graphic design, and video production. We make brands impossible to ignore.",
+  "url": "https://makalsi.com",
+  "email": "hello@makalsi.com",
+  "logo": "https://makalsi.com/Makalsi%20logo-01.svg",
+  "image": "https://makalsi.com/og-image.jpg",
+  "priceRange": "$$",
+  "knowsAbout": [
+    "Web Design",
+    "Web Development",
+    "Brand Identity",
+    "Logo Design",
+    "Graphic Design",
+    "Video Editing",
+    "Videography",
+    "Motion Design",
+    "E-commerce Design",
+    "UI/UX Design",
+    "Campaign Design",
+    "Shopify Development"
+  ],
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Creative Services",
+    "itemListElement": [
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Logo Design" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Brand Identity" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Graphic Design" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Web Design" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Web Development" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "E-commerce Stores" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Video Editing" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Videography" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Motion Design" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Campaign Design" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Strategy & Consulting" } }
+    ]
+  },
+  "sameAs": [
+    "https://instagram.com/makalsi",
+    "https://linkedin.com/company/makalsi",
+    "https://youtube.com/@makalsi"
+  ]
+}
+</script>
+</head>
+  <body class="bg-black antialiased overflow-x-hidden is-loading">
+    <!-- ======================= ON LOAD INTRO ======================= -->
+    <div id="noemaLoader" class="noema-loader" aria-hidden="true">
+      <div class="loader-grid"></div>
+
+      <div class="loader-brand">
+        <div class="loader-brand-main">
+          <img
+            src="Makalsi logo-01.svg"
+            alt="Makalsi Creative Studio"
+            class="loader-logo"
+            style="height: clamp(60px, 11vw, 150px); width: auto; filter: brightness(0) invert(1);"
+          />
+        </div>
+        <div class="loader-tag">Creative Studio</div>
+      </div>
+
+      <div class="loader-meta">
+        <span>001 / Web Design Studio</span>
+        <span>Loading creative work</span>
+      </div>
+
+      <div class="loader-strips">
+        <span class="loader-strip"></span>
+        <span class="loader-strip"></span>
+        <span class="loader-strip"></span>
+        <span class="loader-strip"></span>
+        <span class="loader-strip"></span>
+        <span class="loader-strip"></span>
+        <span class="loader-strip"></span>
+      </div>
+      <div class="loader-scanline"></div>
+    </div>
+
+    <!-- ======================= MOBILE MENU ======================= -->
+    <div id="mobileMenu" class="fixed inset-0 z-[70] bg-black flex flex-col" style="opacity:0; pointer-events:none;">
+      <div class="flex items-center justify-between px-5 pt-5">
+        <img src="Makalsi logo-01.svg" alt="Makalsi" style="height:28px; filter: brightness(0) invert(1);" />
+        <button id="mobileMenuClose" class="text-white p-1" aria-label="Close menu">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+      <nav class="flex flex-col gap-0 mt-12 px-5">
+        <a href="#board"   class="mobile-menu-link display text-[13vw] text-white/25 hover:text-white transition-colors py-1 border-b border-white/10">Services</a>
+        <a href="#product" class="mobile-menu-link display text-[13vw] text-white/25 hover:text-white transition-colors py-1 border-b border-white/10">Work</a>
+        <a href="#archive" class="mobile-menu-link display text-[13vw] text-white/25 hover:text-white transition-colors py-1 border-b border-white/10">Projects</a>
+        <a href="#about"   class="mobile-menu-link display text-[13vw] text-white/25 hover:text-white transition-colors py-1 border-b border-white/10">About</a>
+        <a href="#support" class="mobile-menu-link display text-[13vw] text-white/25 hover:text-white transition-colors py-1 border-b border-white/10">Process</a>
+        <a href="#join"    class="mobile-menu-link display text-[13vw] text-white transition-colors py-1">Contact</a>
+      </nav>
+      <div class="mt-auto px-5 pb-8 flex items-center justify-between">
+        <a href="mailto:hello@makalsi.com" class="text-white/35 text-xs tracking-widest uppercase">hello@makalsi.com</a>
+        <span class="text-white/20 text-xs tracking-widest uppercase">Makalsi Creative Studio</span>
+      </div>
+    </div>
+
+    <!-- ======================= FIXED NAV ======================= -->
+    <nav
+      class="fixed top-0 left-0 right-0 z-[60] flex items-start justify-between px-5 md:px-8 pt-5 text-white mix-blend-difference pointer-events-none"
+    >
+      <div class="leading-tight pointer-events-auto">
+        <a href="#hero" class="block">
+          <img
+            src="Makalsi logo-01.svg"
+            alt="Makalsi Creative Studio"
+            style="height: 32px; width: auto; filter: brightness(0) invert(1);"
+          />
+        </a>
+      </div>
+      <div
+        class="hidden lg:flex items-center gap-7 text-sm font-medium pt-1 pointer-events-auto"
+      >
+        <a href="#board" class="hover:opacity-60 transition-opacity">
+          Services
+        </a>
+        <a href="#product" class="hover:opacity-60 transition-opacity">
+          Work
+        </a>
+        <a href="#archive" class="hover:opacity-60 transition-opacity">
+          Projects
+        </a>
+        <a href="#about" class="hover:opacity-60 transition-opacity">About</a>
+        <a href="#support" class="hover:opacity-60 transition-opacity">
+          Process
+        </a>
+        <a href="#join" class="hover:opacity-60 transition-opacity">Contact</a>
+      </div>
+      <div
+        class="flex items-center gap-5 text-sm font-medium pt-1 pointer-events-auto"
+      >
+        <a
+          href="#join"
+          class="hover:opacity-60 transition-opacity hidden sm:block"
+        >
+          Start a Project
+        </a>
+        <button class="lg:hidden" aria-label="Open menu">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </nav>
+
+    <!-- ======================= WHATSAPP CTA ======================= -->
+    <a
+      href="https://wa.me/254757907927"
+      target="_blank"
+      rel="noopener"
+      id="whatsappcta"
+      aria-label="Chat on WhatsApp"
+      class="fixed bottom-5 left-5 md:bottom-8 md:left-8 z-[65] group flex items-center gap-2.5 bg-[#25D366] text-black pl-4 pr-3 py-2 hover:bg-[#20BA5A] transition-colors"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+      <span class="text-sm font-medium">WhatsApp</span>
+    </a>
+
+    <!-- ======================= FIXED CREATE CTA ======================= -->
+    <a
+      href="#join"
+      id="createcta"
+      class="fixed bottom-5 right-5 md:bottom-8 md:right-8 z-[65] group flex items-center gap-8 bg-black text-white border border-white/25 pl-6 pr-2 py-2 hover:bg-neutral-800 transition-colors"
+    >
+      <span class="text-sm font-medium">Start a Project</span>
+      <span
+        class="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center group-hover:rotate-45 transition-transform duration-300"
+      >
+        <i data-lucide="arrow-up-right" class="w-4 h-4" stroke-width="1.5"></i>
+      </span>
+    </a>
+
+    <!-- ======================= 1 · HERO ======================= -->
+    <section
+      id="hero"
+      class="poster-section h-screen bg-[#4F46E5] divider-grid"
+    >
+      <div
+        id="heroWord"
+        class="absolute inset-0 flex items-center justify-center pointer-events-none z-0"
+      >
+        <h1
+          class="display text-white text-[28vw] md:text-[22vw] leading-none tracking-[-0.055em] whitespace-nowrap select-none"
+        >
+          MAKALSI
+        </h1>
+      </div>
+
+      <div
+        class="absolute inset-0 flex items-center justify-center z-10"
+        style="perspective:1400px;"
+      >
+        <div
+          class="relative w-full max-w-5xl h-[62vh] flex items-center justify-center"
+        >
+          <article
+            id="card1"
+            class="absolute w-40 sm:w-48 md:w-56 -translate-x-[58%] sm:-translate-x-[112%] will-change-transform"
+            style="transform: rotateY(22deg) rotateZ(-8deg);"
+          >
+            <div class="profile-card soft-sheen relative overflow-hidden p-4">
+              <p class="display text-base leading-tight tracking-tight">
+                Delphi
+                <br />
+                Graphics
+              </p>
+              <p class="text-xs text-white/60 mt-1">Brand & Web · Nairobi</p>
+              <img
+                src="images/delphi%201.jpg"
+                alt="Delphi Graphics"
+                class="w-full aspect-square object-cover mt-3"
+              />
+              <a
+                href="https://delphi-graphics.vercel.app/"
+                target="_blank"
+                rel="noopener"
+                class="mt-3 w-full text-xs font-medium bg-white text-black rounded-full py-1.5 flex items-center justify-center"
+              >
+                View Project
+              </a>
+              <button
+                onclick="openCaseStudy()"
+                class="mt-2 w-full flex items-center justify-center gap-1.5 border border-white/30 rounded-md py-1.5 hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <i
+                  data-lucide="file-text"
+                  class="w-3.5 h-3.5"
+                  stroke-width="1.5"
+                ></i>
+                <span class="text-xs">View Case Study</span>
+              </button>
+            </div>
+          </article>
+
+          <article
+            id="card2"
+            class="absolute w-44 sm:w-52 md:w-60 z-10 will-change-transform"
+            style="transform: rotateY(-4deg) rotateZ(2deg);"
+          >
+            <div
+              class="profile-card soft-sheen relative overflow-hidden p-4 shadow-[0_50px_80px_rgba(0,0,0,0.52)]"
+            >
+              <p class="display text-lg leading-tight tracking-tight">
+                Rolling
+                <br />
+                Fitness
+              </p>
+              <p class="text-xs text-white/60 mt-1">E-commerce · Kenya</p>
+              <img
+                src="images/rolling%20fit.jpg"
+                alt="Rolling Total Fitness"
+                class="w-full aspect-square object-cover mt-3"
+              />
+              <a
+                href="https://rolling-fitness.vercel.app/"
+                target="_blank"
+                rel="noopener"
+                class="mt-3 w-full text-xs font-medium bg-white text-black rounded-full py-1.5 flex items-center justify-center"
+              >
+                View Project
+              </a>
+              <button
+                onclick="openRFCaseStudy()"
+                class="mt-2 w-full flex items-center justify-center gap-1.5 border border-white/30 rounded-md py-1.5 hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <i data-lucide="file-text" class="w-3.5 h-3.5" stroke-width="1.5"></i>
+                <span class="text-xs">View Case Study</span>
+              </button>
+            </div>
+          </article>
+
+          <article
+            id="card3"
+            class="absolute w-40 sm:w-48 md:w-56 translate-x-[58%] sm:translate-x-[112%] will-change-transform"
+            style="transform: rotateY(-22deg) rotateZ(9deg);"
+          >
+            <div
+              class="profile-card soft-sheen relative overflow-hidden p-4 shadow-[-30px_40px_60px_rgba(0,0,0,0.45)]"
+            >
+              <p class="display text-base leading-tight tracking-tight">
+                Red
+                <br />
+                Ginger
+              </p>
+              <p class="text-xs text-white/60 mt-1">Restaurant · Nairobi</p>
+              <img
+                src="images/red%20ginger%201.jpg"
+                alt="Red Ginger"
+                class="w-full aspect-square object-cover mt-3"
+              />
+              <a
+                href="https://redginger.vercel.app/"
+                target="_blank"
+                rel="noopener"
+                class="mt-3 w-full text-xs font-medium bg-white text-black rounded-full py-1.5 flex items-center justify-center"
+              >
+                View Project
+              </a>
+              <button
+                onclick="openRGCaseStudy()"
+                class="mt-2 w-full flex items-center justify-center gap-1.5 border border-white/30 rounded-md py-1.5 hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <i data-lucide="file-text" class="w-3.5 h-3.5" stroke-width="1.5"></i>
+                <span class="text-xs">View Case Study</span>
+              </button>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div
+        id="heroCopy"
+        class="absolute bottom-0 left-0 right-0 border-t border-white/40 z-20"
+      >
+        <div
+          class="px-5 md:px-8 py-5 flex items-end justify-between text-white"
+        >
+          <p class="text-base md:text-lg font-medium leading-snug max-w-sm">
+            Bold design. Clean code. Built to make your brand impossible to ignore.
+          </p>
+          <i
+            data-lucide="arrow-down"
+            class="w-5 h-5 mb-1 animate-bounce"
+            stroke-width="1.5"
+          ></i>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= 2 · INTERLUDE ======================= -->
+    <section
+      id="interlude"
+      class="poster-section h-screen bg-[#10B981] divider-grid dark-lines"
+    >
+      <div
+        id="interludeWipe"
+        class="absolute -top-[8vw] left-0 right-0 h-[18vw] -rotate-2 origin-left bg-[#10B981] z-10"
+      ></div>
+      <div
+        id="brush1"
+        class="absolute top-[55%] left-[8%] w-[34vw] h-[14vw] rounded-[50%] border-[1.2vw] opacity-85 -rotate-6 border-[#4F46E5] z-10"
+      ></div>
+      <div
+        id="brush2"
+        class="absolute top-[30%] right-[10%] w-[18vw] h-[18vw] rounded-full blur-[2px] bg-[#F43F5E]/80 z-10"
+      ></div>
+
+      <div class="absolute inset-0 flex items-center overflow-hidden z-20">
+        <h2
+          id="artistsWord"
+          class="display text-black text-[29vw] md:text-[24vw] leading-none tracking-[-0.06em] whitespace-nowrap select-none will-change-transform"
+        >
+          DESIGN &nbsp; FILM &nbsp; BUILD
+        </h2>
+      </div>
+
+      <div
+        id="interludeCopy"
+        class="absolute bottom-0 left-0 right-0 border-t border-black/25 z-30"
+      >
+        <div
+          class="px-5 md:px-8 py-5 grid grid-cols-1 md:grid-cols-3 gap-4 text-black"
+        >
+          <p class="text-base font-semibold">
+            For brands ready to stand out.
+          </p>
+          <p class="text-base text-black/70 md:col-span-2 max-w-md">
+            Websites, brand identities, and digital experiences crafted with
+            purpose and precision. From concept to launch.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= 3 · PRODUCT ======================= -->
+    <section
+      id="product"
+      class="poster-section h-screen bg-[#F43F5E] divider-grid dark-lines"
+    >
+      <div
+        id="theCardWord"
+        class="absolute inset-0 flex items-center justify-center pointer-events-none will-change-transform z-0"
+      >
+        <h2
+          class="display text-black text-[30vw] md:text-[25vw] leading-none tracking-[-0.06em] whitespace-nowrap select-none"
+        >
+          THE WORK
+        </h2>
+      </div>
+
+      <div
+        class="absolute inset-0 flex flex-col md:flex-row items-center justify-center gap-9 md:gap-[14vw] pt-12 z-10"
+        style="perspective:1600px;"
+      >
+        <article id="walletPass" class="w-56 md:w-64 will-change-transform">
+          <div
+            class="p-5 shadow-[20px_40px_70px_rgba(0,0,0,0.42)] relative overflow-hidden bg-[#B91C1C]"
+            style="transform: rotateY(14deg);"
+          >
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-white/22 via-transparent to-black/20 pointer-events-none"
+            ></div>
+            <div class="relative flex items-center justify-between">
+              <p class="display text-xs text-white/80 uppercase tracking-tight">
+                MAKALSI
+              </p>
+              <span class="text-xs text-white/60">PASS</span>
+            </div>
+            <div class="relative mt-4 border-t border-white/20 pt-4">
+              <p
+                class="display text-xl text-white leading-tight tracking-tight"
+              >
+                Red
+                <br />
+                Ginger
+              </p>
+              <p class="text-xs text-white/65 mt-1">Restaurant · Nairobi, Kenya</p>
+            </div>
+            <div
+              class="relative mt-5 bg-white p-3 flex items-center justify-center"
+            >
+              <img
+                src="images/red%20ginger%202.jpg"
+                alt="Red Ginger"
+                class="w-32 h-32 object-cover"
+              />
+            </div>
+            <div class="relative mt-4 space-y-2">
+              <button
+                onclick="openRGCaseStudy()"
+                class="w-full text-xs font-medium bg-white text-black rounded-full py-1.5 flex items-center justify-center gap-1.5 hover:bg-white/90 transition-colors cursor-pointer"
+              >
+                <i data-lucide="file-text" class="w-3 h-3" stroke-width="2"></i>
+                View Case Study
+              </button>
+              <div class="flex items-center justify-between text-xs text-white/60">
+                <span>redginger.vercel.app</span>
+                <i data-lucide="scan-line" class="w-4 h-4" stroke-width="1.5"></i>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article id="phoneMock" class="w-56 md:w-64 will-change-transform">
+          <div
+            class="bg-black p-2 shadow-[-20px_40px_70px_rgba(0,0,0,0.45)] rounded-md"
+            style="transform: rotateY(-12deg);"
+          >
+            <div class="bg-neutral-950 text-white overflow-hidden">
+              <img
+                src="images/delphi%201.jpg"
+                alt="Delphi Graphics"
+                class="w-full h-28 object-cover"
+              />
+              <div class="p-4 -mt-8 relative">
+                <div class="w-14 h-14 border-2 border-black bg-black flex items-center justify-center">
+                  <span class="display text-white text-xs tracking-tight">DG</span>
+                </div>
+                <p class="display text-base mt-3 tracking-tight">
+                  Delphi Graphics
+                </p>
+                <p class="text-xs text-white/60">
+                  Brand & Web · Nairobi, Kenya
+                </p>
+                <button
+                  onclick="openCaseStudy()"
+                  class="mt-4 w-full text-xs font-medium bg-white text-black rounded-full py-2 flex items-center justify-center gap-1.5 hover:bg-white/90 transition-colors cursor-pointer"
+                >
+                  <i data-lucide="file-text" class="w-3 h-3" stroke-width="2"></i>
+                  View Case Study
+                </button>
+                <a
+                  href="https://delphi-graphics.vercel.app/"
+                  target="_blank"
+                  rel="noopener"
+                  class="mt-2 flex items-center justify-center gap-1.5 border border-white/30 rounded-md py-2 text-white/60 hover:text-white transition-colors"
+                >
+                  <i
+                    data-lucide="external-link"
+                    class="w-3.5 h-3.5"
+                    stroke-width="1.5"
+                  ></i>
+                  <span class="text-xs">Live Site</span>
+                </a>
+                <div class="mt-4 space-y-px">
+                  <div
+                    class="w-full flex items-center justify-between text-xs py-2.5 px-3 bg-white/5"
+                  >
+                    <span>Brand Identity</span>
+                    <i
+                      data-lucide="arrow-right"
+                      class="w-3.5 h-3.5"
+                      stroke-width="1.5"
+                    ></i>
+                  </div>
+                  <div
+                    class="w-full flex items-center justify-between text-xs py-2.5 px-3 bg-white/5"
+                  >
+                    <span>Web Design & Dev</span>
+                    <i
+                      data-lucide="arrow-right"
+                      class="w-3.5 h-3.5"
+                      stroke-width="1.5"
+                    ></i>
+                  </div>
+                  <div
+                    class="w-full flex items-center justify-between text-xs py-2.5 px-3 bg-white/5"
+                  >
+                    <span>Print & Signage</span>
+                    <i
+                      data-lucide="arrow-right"
+                      class="w-3.5 h-3.5"
+                      stroke-width="1.5"
+                    ></i>
+                  </div>
+                </div>
+                <div class="mt-4 grid grid-cols-3 gap-1">
+                  <img
+                    src="images/delphi%201.jpg"
+                    class="aspect-square object-cover"
+                    alt="Delphi Graphics screenshot 1"
+                  />
+                  <img
+                    src="images/delphi%202.jpg"
+                    class="aspect-square object-cover"
+                    alt="Delphi Graphics screenshot 2"
+                  />
+                  <img
+                    src="images/delphi%203.jpg"
+                    class="aspect-square object-cover"
+                    alt="Delphi Graphics screenshot 3"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div
+        class="absolute bottom-0 left-0 right-0 border-t border-black/25 z-20"
+      >
+        <div
+          class="px-5 md:px-8 py-5 flex items-end justify-between text-black"
+        >
+          <p class="text-base font-semibold max-w-xs leading-snug">
+            Designed with intention. Built to perform.
+          </p>
+          <p class="text-xs text-black/60 hidden sm:block">
+            Design · Build · Launch
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= 4 · MANIFESTO ======================= -->
+    <section
+      id="manifesto"
+      class="poster-section h-screen bg-[#f4efe7] divider-grid dark-lines flex items-center justify-center px-5"
+    >
+      <div
+        class="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(79,70,229,0.24),transparent_32%),radial-gradient(circle_at_80%_72%,rgba(244,63,94,0.22),transparent_30%)]"
+      ></div>
+      <div class="relative z-10 manifesto-sentence text-black">
+        <span class="manifesto-word">We</span>
+        <span class="manifesto-word">design</span>
+        <span class="manifesto-word">websites</span>
+        <span class="manifesto-word">that</span>
+        <span class="manifesto-word">make</span>
+        <span class="manifesto-word">your</span>
+        <span class="manifesto-word">brand</span>
+        <span class="manifesto-word">impossible</span>
+        <span class="manifesto-word">to</span>
+        <span class="manifesto-word">ignore.</span>
+      </div>
+      <span
+        id="finallyWord"
+        class="hand absolute z-20 text-[#F43F5E] text-[18vw] md:text-[10vw] left-[18%] top-[55%] -rotate-12 select-none"
+      >
+        beautifully
+      </span>
+      <div
+        class="absolute top-[12%] left-[8%] display text-[9vw] leading-none text-black/5 rotate-[-8deg]"
+      >
+        BRANDING LOGOS WEBSITES UI/UX MOTION VIDEO IDENTITY GRAPHIC ECOMMERCE
+        PHOTOGRAPHY FILM CREATIVE DIGITAL DESIGN
+      </div>
+      <p class="section-label text-black/60">04 / Manifesto</p>
+    </section>
+
+    <!-- ======================= 5 · TEMPLATES ======================= -->
+    <section
+      id="archive"
+      class="relative bg-black divider-grid px-5 md:px-8 pt-28 pb-20"
+    >
+      <h2
+        id="archiveWord"
+        class="huge-word absolute z-0 text-white/[0.04] top-[8%] left-1/2 -translate-x-1/2 pointer-events-none select-none"
+      >
+        TEMPLATES
+      </h2>
+
+      <!-- Section header -->
+      <div class="relative z-10 max-w-6xl mx-auto mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <p class="text-xs uppercase tracking-[0.2em] text-white/35 mb-3">05 / Templates</p>
+          <h3 class="display text-white leading-none" style="font-size: clamp(2.4rem, 6vw, 4.8rem);">Grab a template.<br/>Own the look.</h3>
+        </div>
+        <div class="text-right">
+          <p class="display text-5xl text-white">$15</p>
+          <p class="text-xs text-white/35 mt-1 uppercase tracking-[0.16em]">Per template · Framer</p>
+        </div>
+      </div>
+
+      <!-- Template grid -->
+      <div class="relative z-10 max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        <!-- 01 · RESTO -->
+        <article class="template-card group flex flex-col border border-white/10 overflow-hidden bg-[#080808]">
+          <div class="relative aspect-[4/3] overflow-hidden">
+            <img src="https://picsum.photos/seed/tmpl-resto/800/600" alt="Resto template" class="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500" />
+            <span class="absolute top-3 left-3 text-[10px] uppercase tracking-[0.2em] bg-[#B91C1C] text-white px-2.5 py-1">Restaurant</span>
+            <span class="absolute top-3 right-3 display text-sm bg-white text-black px-2.5 py-1">$15</span>
+          </div>
+          <div class="p-5 flex flex-col flex-1 gap-3">
+            <div>
+              <p class="display text-2xl text-white leading-none">RESTO</p>
+              <p class="text-[10px] text-white/35 mt-1.5 uppercase tracking-[0.18em]">Framer · Restaurant & Dining</p>
+            </div>
+            <p class="text-xs text-white/48 leading-relaxed flex-1">Bold, food-first template for restaurants and cafés. Menu showcase, reservations, and private events built in. Swap the images and go live.</p>
+            <div class="flex gap-2 pt-1">
+              <a href="#" class="flex-1 text-center text-xs border border-white/18 py-2.5 text-white/55 hover:text-white hover:border-white/45 transition-colors">Preview</a>
+              <a href="#" class="flex-1 text-center text-xs bg-white text-black font-semibold py-2.5 hover:bg-white/90 transition-colors">Buy — $15</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- 02 · FUEL -->
+        <article class="template-card group flex flex-col border border-white/10 overflow-hidden bg-[#080808]">
+          <div class="relative aspect-[4/3] overflow-hidden">
+            <img src="https://picsum.photos/seed/tmpl-fuel/800/600" alt="Fuel template" class="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500" />
+            <span class="absolute top-3 left-3 text-[10px] uppercase tracking-[0.2em] bg-[#EA580C] text-white px-2.5 py-1">E-commerce</span>
+            <span class="absolute top-3 right-3 display text-sm bg-white text-black px-2.5 py-1">$15</span>
+          </div>
+          <div class="p-5 flex flex-col flex-1 gap-3">
+            <div>
+              <p class="display text-2xl text-white leading-none">FUEL</p>
+              <p class="text-[10px] text-white/35 mt-1.5 uppercase tracking-[0.18em]">Framer · Fitness & Supplements</p>
+            </div>
+            <p class="text-xs text-white/48 leading-relaxed flex-1">High-energy e-commerce template for fitness and supplement brands. Product grid, promo banners, and trust badges ready. Just add your products.</p>
+            <div class="flex gap-2 pt-1">
+              <a href="#" class="flex-1 text-center text-xs border border-white/18 py-2.5 text-white/55 hover:text-white hover:border-white/45 transition-colors">Preview</a>
+              <a href="#" class="flex-1 text-center text-xs bg-white text-black font-semibold py-2.5 hover:bg-white/90 transition-colors">Buy — $15</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- 03 · STUDIO -->
+        <article class="template-card group flex flex-col border border-white/10 overflow-hidden bg-[#080808]">
+          <div class="relative aspect-[4/3] overflow-hidden">
+            <img src="https://picsum.photos/seed/tmpl-studio/800/600" alt="Studio template" class="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500" />
+            <span class="absolute top-3 left-3 text-[10px] uppercase tracking-[0.2em] bg-[#4F46E5] text-white px-2.5 py-1">Agency</span>
+            <span class="absolute top-3 right-3 display text-sm bg-white text-black px-2.5 py-1">$15</span>
+          </div>
+          <div class="p-5 flex flex-col flex-1 gap-3">
+            <div>
+              <p class="display text-2xl text-white leading-none">STUDIO</p>
+              <p class="text-[10px] text-white/35 mt-1.5 uppercase tracking-[0.18em]">Framer · Creative Agency</p>
+            </div>
+            <p class="text-xs text-white/48 leading-relaxed flex-1">Editorial agency template with animated hero, work grid, services, and contact flow. Built for studios, freelancers, and creative teams.</p>
+            <div class="flex gap-2 pt-1">
+              <a href="#" class="flex-1 text-center text-xs border border-white/18 py-2.5 text-white/55 hover:text-white hover:border-white/45 transition-colors">Preview</a>
+              <a href="#" class="flex-1 text-center text-xs bg-white text-black font-semibold py-2.5 hover:bg-white/90 transition-colors">Buy — $15</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- 04 · CRAFT -->
+        <article class="template-card group flex flex-col border border-white/10 overflow-hidden bg-[#080808]">
+          <div class="relative aspect-[4/3] overflow-hidden">
+            <img src="https://picsum.photos/seed/tmpl-craft/800/600" alt="Craft template" class="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500" />
+            <span class="absolute top-3 left-3 text-[10px] uppercase tracking-[0.2em] bg-[#10B981] text-black px-2.5 py-1">Services</span>
+            <span class="absolute top-3 right-3 display text-sm bg-white text-black px-2.5 py-1">$15</span>
+          </div>
+          <div class="p-5 flex flex-col flex-1 gap-3">
+            <div>
+              <p class="display text-2xl text-white leading-none">CRAFT</p>
+              <p class="text-[10px] text-white/35 mt-1.5 uppercase tracking-[0.18em]">Framer · Print & Services</p>
+            </div>
+            <p class="text-xs text-white/48 leading-relaxed flex-1">Clean template for print shops, trade businesses, and service companies. Service pages, quote flow, and trust signals all included.</p>
+            <div class="flex gap-2 pt-1">
+              <a href="#" class="flex-1 text-center text-xs border border-white/18 py-2.5 text-white/55 hover:text-white hover:border-white/45 transition-colors">Preview</a>
+              <a href="#" class="flex-1 text-center text-xs bg-white text-black font-semibold py-2.5 hover:bg-white/90 transition-colors">Buy — $15</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- 05 · FOLIO -->
+        <article class="template-card group flex flex-col border border-white/10 overflow-hidden bg-[#080808]">
+          <div class="relative aspect-[4/3] overflow-hidden">
+            <img src="https://picsum.photos/seed/tmpl-folio/800/600" alt="Folio template" class="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500" />
+            <span class="absolute top-3 left-3 text-[10px] uppercase tracking-[0.2em] bg-white text-black px-2.5 py-1">Portfolio</span>
+            <span class="absolute top-3 right-3 display text-sm bg-white text-black px-2.5 py-1">$15</span>
+          </div>
+          <div class="p-5 flex flex-col flex-1 gap-3">
+            <div>
+              <p class="display text-2xl text-white leading-none">FOLIO</p>
+              <p class="text-[10px] text-white/35 mt-1.5 uppercase tracking-[0.18em]">Framer · Personal Portfolio</p>
+            </div>
+            <p class="text-xs text-white/48 leading-relaxed flex-1">Minimal portfolio template for designers, photographers, and creatives. Project grid, about, and contact. Clean, fast, and yours to own.</p>
+            <div class="flex gap-2 pt-1">
+              <a href="#" class="flex-1 text-center text-xs border border-white/18 py-2.5 text-white/55 hover:text-white hover:border-white/45 transition-colors">Preview</a>
+              <a href="#" class="flex-1 text-center text-xs bg-white text-black font-semibold py-2.5 hover:bg-white/90 transition-colors">Buy — $15</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- 06 · MORE COMING -->
+        <article class="template-card flex flex-col border border-dashed border-white/12 overflow-hidden items-center justify-center min-h-[320px] gap-3 px-8 text-center">
+          <div class="w-10 h-10 border border-white/20 flex items-center justify-center mb-2">
+            <i data-lucide="plus" class="w-5 h-5 text-white/30" stroke-width="1.5"></i>
+          </div>
+          <p class="display text-xl text-white/20 leading-none">MORE SOON</p>
+          <p class="text-xs text-white/25 leading-relaxed max-w-[180px]">New templates dropping regularly. Follow for updates.</p>
+          <a href="#join" class="mt-2 text-xs border border-white/18 px-4 py-2 text-white/40 hover:text-white hover:border-white/40 transition-colors">Get Notified</a>
+        </article>
+
+      </div>
+
+      <div class="relative z-10 max-w-6xl mx-auto mt-10 border-t border-white/10 pt-6 flex items-center justify-between">
+        <p class="text-xs text-white/25 uppercase tracking-[0.18em]">Framer templates · Instant download · Free updates</p>
+        <p class="text-xs text-white/25 uppercase tracking-[0.18em] hidden sm:block">05 / Templates</p>
+      </div>
+
+      <!-- placeholder: remove these images once real template screenshots are added -->
+      <div style="display:none;">
+        <img src="https://picsum.photos/seed/archive-02/480/600" alt="" />
+        <img src="https://picsum.photos/seed/archive-03/480/600" alt="" />
+        <img
+          class="archive-img"
+          src="https://picsum.photos/seed/archive-02/480/600"
+          alt="Artwork archive 02"
+        />
+        <img
+          class="archive-img"
+          src="https://picsum.photos/seed/archive-03/480/600"
+          alt="Artwork archive 03"
+        />
+        <img
+          class="archive-img"
+          src="https://picsum.photos/seed/archive-04/480/600"
+          alt="Artwork archive 04"
+        />
+        <img
+          class="archive-img"
+          src="https://picsum.photos/seed/archive-05/480/600"
+          alt="Artwork archive 05"
+        />
+        <img
+          class="archive-img"
+          src="https://picsum.photos/seed/archive-06/480/600"
+          alt="Artwork archive 06"
+        />
+        <img
+          class="archive-img"
+          src="https://picsum.photos/seed/archive-07/480/600"
+          alt="Artwork archive 07"
+        />
+        <img
+          class="archive-img"
+          src="https://picsum.photos/seed/archive-08/480/600"
+          alt="Artwork archive 08"
+        />
+        <img
+          class="archive-img"
+          src="https://picsum.photos/seed/archive-09/480/600"
+          alt="Artwork archive 09"
+        />
+        <img
+          class="archive-img"
+          src="https://picsum.photos/seed/archive-10/480/600"
+          alt="Artwork archive 10"
+        />
+        <img
+          class="archive-img"
+          src="https://picsum.photos/seed/archive-11/480/600"
+          alt="Artwork archive 11"
+        />
+        <img
+          class="archive-img"
+          src="https://picsum.photos/seed/archive-12/480/600"
+          alt="Artwork archive 12"
+        />
+        <img
+          class="archive-img"
+          src="https://picsum.photos/seed/archive-13/480/600"
+          alt="Artwork archive 13"
+        />
+        <img
+          class="archive-img"
+          src="https://picsum.photos/seed/archive-14/480/600"
+          alt="Artwork archive 14"
+        />
+        <img
+          class="archive-img"
+          src="https://picsum.photos/seed/archive-15/480/600"
+          alt="Artwork archive 15"
+        />
+      </div>
+      <div
+        class="absolute bottom-0 left-0 right-0 border-t border-white/25 z-10"
+      >
+        <div
+          class="px-5 md:px-8 py-5 flex items-end justify-between text-white"
+        >
+          <p class="text-base font-semibold max-w-sm leading-snug">
+            From brand identity to full web builds — every project tells a story.
+          </p>
+          <p class="text-xs text-white/55 hidden sm:block">
+            Selected work
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= 6 · PROFILE BUILDER ======================= -->
+    <section
+      id="builder"
+      class="poster-section h-screen bg-[#f4efe7] divider-grid dark-lines"
+    >
+      <h2
+        id="buildWord"
+        class="huge-word absolute left-[-4vw] top-1/2 -translate-y-1/2 z-0 text-black"
+      >
+        BUILD
+      </h2>
+      <div
+        class="relative z-10 min-h-screen grid grid-cols-1 lg:grid-cols-2 items-center gap-8 px-5 md:px-8 pt-24 pb-20"
+      >
+        <div class="hidden lg:block"></div>
+        <article id="builderCard" class="builder-shell ml-auto overflow-hidden">
+          <header
+            class="p-5 flex items-start justify-between border-b border-white/20"
+          >
+            <div>
+              <p class="display text-3xl tracking-tight leading-none">
+                MAKALSI
+              </p>
+              <p class="text-xs text-white/55 mt-2">How we work / v.01</p>
+            </div>
+            <i
+              data-lucide="layers"
+              class="w-5 h-5 text-white/60"
+              stroke-width="1.5"
+            ></i>
+          </header>
+
+          <div class="builder-module p-5" data-number="01">
+            <p class="text-xs uppercase tracking-[0.2em] text-white/40">Discovery</p>
+            <p class="mt-2 text-sm text-white/82 max-w-xs">
+              We learn your brand, goals, and audience before a single pixel is placed.
+            </p>
+          </div>
+          <div class="builder-module p-5" data-number="02">
+            <p class="text-xs uppercase tracking-[0.2em] text-white/40">
+              Strategy
+            </p>
+            <div class="mt-3 grid grid-cols-4 gap-1.5">
+              <img
+                src="https://picsum.photos/seed/build-a/120/120"
+                alt=""
+                class="aspect-square object-cover grayscale"
+              />
+              <img
+                src="https://picsum.photos/seed/build-b/120/120"
+                alt=""
+                class="aspect-square object-cover grayscale"
+              />
+              <img
+                src="https://picsum.photos/seed/build-c/120/120"
+                alt=""
+                class="aspect-square object-cover grayscale"
+              />
+              <img
+                src="https://picsum.photos/seed/build-d/120/120"
+                alt=""
+                class="aspect-square object-cover grayscale"
+              />
+            </div>
+          </div>
+          <div class="builder-module grid grid-cols-2" data-number="03">
+            <button
+              class="p-5 text-left border-r border-white/15 bg-white text-black text-sm font-semibold"
+            >
+              Design
+            </button>
+            <button class="p-5 text-left text-sm font-semibold">Develop</button>
+          </div>
+          <div class="builder-module grid grid-cols-2" data-number="04">
+            <button
+              class="p-5 text-left text-sm font-semibold border-r border-white/15"
+            >
+              Launch
+            </button>
+            <button class="p-5 text-left text-sm font-semibold">Support</button>
+          </div>
+          <a
+            href="#join"
+            class="builder-module p-5 flex items-center justify-between hover:bg-white/5 transition-colors"
+            data-number="05"
+          >
+            <span class="text-sm font-semibold">Start a project</span>
+            <span
+              class="flex items-center gap-2 text-xs border border-white/25 px-3 py-2 rounded-md"
+            >
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+              Let's talk
+            </span>
+          </a>
+        </article>
+      </div>
+      <div class="absolute left-5 md:left-8 top-[26%] z-20 hidden md:block">
+        <p
+          class="display text-[11vw] leading-none tracking-[-0.055em] text-[#4F46E5]"
+        >
+          01
+        </p>
+        <p class="text-xs uppercase tracking-[0.18em] max-w-[180px]">
+          Every project begins with a conversation.
+        </p>
+      </div>
+    </section>
+
+    <!-- ======================= 7 · COMMUNITY BOARD ======================= -->
+    <section
+      id="board"
+      class="poster-section min-h-screen bg-[#10B981] divider-grid dark-lines px-5 md:px-8 pt-28 pb-16 flex items-center"
+    >
+      <h2
+        id="boardWord"
+        class="huge-word absolute z-0 text-black/18 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+      >
+        BOARD
+      </h2>
+      <div
+        class="relative z-10 w-full max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"
+      >
+        <article class="op-card">
+          <div>
+            <p class="text-xs uppercase tracking-[0.18em] text-white/45">Service</p>
+            <h3 class="display text-3xl leading-none mt-3">Logo<br />Design</h3>
+          </div>
+          <div class="flex items-end justify-between text-xs text-white/58">
+            <span>Wordmark<br />Symbol · Badge</span>
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+          </div>
+        </article>
+        <article class="op-card">
+          <div>
+            <p class="text-xs uppercase tracking-[0.18em] text-white/45">Service</p>
+            <h3 class="display text-3xl leading-none mt-3">Brand<br />Identity</h3>
+          </div>
+          <div class="flex items-end justify-between text-xs text-white/58">
+            <span>Type · Colour<br />Guidelines</span>
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+          </div>
+        </article>
+        <article class="op-card">
+          <div>
+            <p class="text-xs uppercase tracking-[0.18em] text-white/45">Service</p>
+            <h3 class="display text-3xl leading-none mt-3">Graphic<br />Design</h3>
+          </div>
+          <div class="flex items-end justify-between text-xs text-white/58">
+            <span>Print · Social<br />Packaging</span>
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+          </div>
+        </article>
+        <article class="op-card">
+          <div>
+            <p class="text-xs uppercase tracking-[0.18em] text-white/45">Service</p>
+            <h3 class="display text-3xl leading-none mt-3">Web<br />Design</h3>
+          </div>
+          <div class="flex items-end justify-between text-xs text-white/58">
+            <span>UI · UX<br />Interaction</span>
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+          </div>
+        </article>
+        <article class="op-card">
+          <div>
+            <p class="text-xs uppercase tracking-[0.18em] text-white/45">Service</p>
+            <h3 class="display text-3xl leading-none mt-3">Web<br />Development</h3>
+          </div>
+          <div class="flex items-end justify-between text-xs text-white/58">
+            <span>React · Next<br />Webflow</span>
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+          </div>
+        </article>
+        <article class="op-card">
+          <div>
+            <p class="text-xs uppercase tracking-[0.18em] text-white/45">Service</p>
+            <h3 class="display text-3xl leading-none mt-3">E-commerce<br />Stores</h3>
+          </div>
+          <div class="flex items-end justify-between text-xs text-white/58">
+            <span>Shopify<br />WooCommerce</span>
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+          </div>
+        </article>
+        <article class="op-card">
+          <div>
+            <p class="text-xs uppercase tracking-[0.18em] text-white/45">Service</p>
+            <h3 class="display text-3xl leading-none mt-3">Video<br />Editing</h3>
+          </div>
+          <div class="flex items-end justify-between text-xs text-white/58">
+            <span>Reels · Ads<br />Short-form</span>
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+          </div>
+        </article>
+        <article class="op-card">
+          <div>
+            <p class="text-xs uppercase tracking-[0.18em] text-white/45">Service</p>
+            <h3 class="display text-3xl leading-none mt-3">Videography<br /></h3>
+          </div>
+          <div class="flex items-end justify-between text-xs text-white/58">
+            <span>Brand Films<br />Testimonials</span>
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+          </div>
+        </article>
+        <article class="op-card">
+          <div>
+            <p class="text-xs uppercase tracking-[0.18em] text-white/45">Service</p>
+            <h3 class="display text-3xl leading-none mt-3">Motion<br />Design</h3>
+          </div>
+          <div class="flex items-end justify-between text-xs text-white/58">
+            <span>Animation<br />After Effects</span>
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+          </div>
+        </article>
+        <article class="op-card">
+          <div>
+            <p class="text-xs uppercase tracking-[0.18em] text-white/45">Service</p>
+            <h3 class="display text-3xl leading-none mt-3">Campaign<br />Design</h3>
+          </div>
+          <div class="flex items-end justify-between text-xs text-white/58">
+            <span>Social · Print<br />Digital</span>
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+          </div>
+        </article>
+        <article class="op-card bg-[#F43F5E] text-black border-black/20">
+          <div>
+            <p class="text-xs uppercase tracking-[0.18em] text-black/55">Service</p>
+            <h3 class="display text-3xl leading-none mt-3">Strategy<br />& Consulting</h3>
+          </div>
+          <div class="flex items-end justify-between text-xs text-black/65">
+            <span>Audits<br />Roadmaps</span>
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+          </div>
+        </article>
+      </div>
+      <svg
+        class="absolute inset-0 w-full h-full z-[2] opacity-40 pointer-events-none"
+        fill="none"
+        stroke="black"
+        stroke-width="1"
+      >
+        <path
+          d="M90 220 C 360 110, 690 420, 1040 190"
+          stroke-dasharray="6 10"
+        ></path>
+        <path
+          d="M120 680 C 420 520, 760 740, 1160 480"
+          stroke-dasharray="6 10"
+        ></path>
+      </svg>
+    </section>
+
+    <!-- ======================= ABOUT ======================= -->
+    <section
+      id="about"
+      class="relative bg-black"
+      style="min-height: 600vh;"
+    >
+      <div class="sticky top-0 h-screen flex items-center justify-center px-5 md:px-8 overflow-hidden">
+        <h2
+          class="huge-word absolute z-0 pointer-events-none select-none text-white/[0.04] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+        >
+          STUDIO
+        </h2>
+
+        <div class="relative z-10 w-full max-w-4xl mx-auto">
+          <p id="aboutLabel" class="text-xs uppercase tracking-[0.18em] text-white/35 mb-10">
+            About the Studio &middot; Est. 2024
+          </p>
+
+          <div class="about-story">
+            <p class="about-line display text-white leading-none mb-5" style="font-size: clamp(2rem, 5.2vw, 4.6rem);">
+              <span class="about-word">In</span>&nbsp;<span class="about-word">2024,</span>&nbsp;<span class="about-word">one</span>&nbsp;<span class="about-word">designer</span>&nbsp;<span class="about-word">in</span>&nbsp;<span class="about-word">Nairobi</span>&nbsp;<span class="about-word">decided</span>&nbsp;<span class="about-word">enough</span>&nbsp;<span class="about-word">was</span>&nbsp;<span class="about-word">enough.</span>
+            </p>
+
+            <p class="about-line text-white/55 leading-relaxed mb-5" style="font-size: clamp(0.9rem, 1.7vw, 1.15rem); max-width: 42rem;">
+              <span class="about-word">Too</span>&nbsp;<span class="about-word">many</span>&nbsp;<span class="about-word">brands</span>&nbsp;<span class="about-word">were</span>&nbsp;<span class="about-word">settling</span>&nbsp;<span class="about-word">—</span>&nbsp;<span class="about-word">recycled</span>&nbsp;<span class="about-word">templates,</span>&nbsp;<span class="about-word">safe</span>&nbsp;<span class="about-word">ideas,</span>&nbsp;<span class="about-word">work</span>&nbsp;<span class="about-word">that</span>&nbsp;<span class="about-word">looked</span>&nbsp;<span class="about-word">like</span>&nbsp;<span class="about-word">everyone</span>&nbsp;<span class="about-word">else's.</span>&nbsp;<span class="about-word">Generic</span>&nbsp;<span class="about-word">agencies</span>&nbsp;<span class="about-word">churning</span>&nbsp;<span class="about-word">out</span>&nbsp;<span class="about-word">the</span>&nbsp;<span class="about-word">same</span>&nbsp;<span class="about-word">thing,</span>&nbsp;<span class="about-word">over</span>&nbsp;<span class="about-word">and</span>&nbsp;<span class="about-word">over.</span>
+            </p>
+
+            <p class="about-line text-white/55 leading-relaxed mb-8" style="font-size: clamp(0.9rem, 1.7vw, 1.15rem); max-width: 42rem;">
+              <span class="about-word">So</span>&nbsp;<span class="about-word">Makalsi</span>&nbsp;<span class="about-word">was</span>&nbsp;<span class="about-word">born.</span>&nbsp;<span class="about-word">A</span>&nbsp;<span class="about-word">studio</span>&nbsp;<span class="about-word">built</span>&nbsp;<span class="about-word">on</span>&nbsp;<span class="about-word">the</span>&nbsp;<span class="about-word">belief</span>&nbsp;<span class="about-word">that</span>&nbsp;<span class="about-word">your</span>&nbsp;<span class="about-word">brand</span>&nbsp;<span class="about-word">should</span>&nbsp;<span class="about-word">stop</span>&nbsp;<span class="about-word">people</span>&nbsp;<span class="about-word">mid-scroll.</span>&nbsp;<span class="about-word">That</span>&nbsp;<span class="about-word">great</span>&nbsp;<span class="about-word">design</span>&nbsp;<span class="about-word">isn't</span>&nbsp;<span class="about-word">a</span>&nbsp;<span class="about-word">luxury</span>&nbsp;<span class="about-word">—</span>&nbsp;<span class="about-word">it's</span>&nbsp;<span class="about-word">the</span>&nbsp;<span class="about-word">sharpest</span>&nbsp;<span class="about-word">business</span>&nbsp;<span class="about-word">tool</span>&nbsp;<span class="about-word">you</span>&nbsp;<span class="about-word">have.</span>
+            </p>
+
+            <p class="about-line display text-[#10B981] leading-none" style="font-size: clamp(1.4rem, 3.6vw, 3rem);">
+              <span class="about-word">From</span>&nbsp;<span class="about-word">Nairobi.</span>&nbsp;<span class="about-word">For</span>&nbsp;<span class="about-word">the</span>&nbsp;<span class="about-word">world.</span>
+            </p>
+          </div>
+
+          <div id="aboutStats" class="mt-12 grid grid-cols-3 gap-6 border-t border-white/12 pt-8">
+            <div>
+              <p class="display text-5xl text-white">50+</p>
+              <p class="text-xs text-white/35 mt-1.5 uppercase tracking-[0.16em]">Projects</p>
+            </div>
+            <div>
+              <p class="display text-5xl text-white">30+</p>
+              <p class="text-xs text-white/35 mt-1.5 uppercase tracking-[0.16em]">Clients</p>
+            </div>
+            <div>
+              <p class="display text-5xl text-white">11</p>
+              <p class="text-xs text-white/35 mt-1.5 uppercase tracking-[0.16em]">Services</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="section-label text-white/30">Studio / About</p>
+      </div>
+    </section>
+
+    <!-- ======================= TESTIMONIALS ======================= -->
+    <section
+      id="testimonials"
+      class="relative bg-[#f4efe7] divider-grid dark-lines px-5 md:px-8 py-24"
+    >
+      <div class="max-w-6xl mx-auto">
+        <p class="text-xs uppercase tracking-[0.18em] text-black/40 mb-12">
+          What clients say
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <article class="testimonial-card bg-black text-white p-7 border border-white/10">
+            <p class="text-sm text-white/68 leading-relaxed">
+              "Makalsi transformed our brand completely. The website they built
+              has tripled our inbound leads. Every single detail was
+              considered."
+            </p>
+            <div class="mt-6 border-t border-white/12 pt-5">
+              <p class="text-sm font-semibold">Sarah K.</p>
+              <p class="text-xs text-white/40 mt-0.5">CEO — Lagos Heritage Co.</p>
+            </div>
+          </article>
+          <article class="testimonial-card bg-[#4F46E5] text-white p-7">
+            <p class="text-sm text-white/78 leading-relaxed">
+              "The attention to detail is unmatched. Every pixel, every frame.
+              They don't just deliver work — they deliver the right work."
+            </p>
+            <div class="mt-6 border-t border-white/15 pt-5">
+              <p class="text-sm font-semibold">James O.</p>
+              <p class="text-xs text-white/48 mt-0.5">Founder — Bloom Skincare</p>
+            </div>
+          </article>
+          <article class="testimonial-card bg-black text-white p-7 border border-white/10">
+            <p class="text-sm text-white/68 leading-relaxed">
+              "Working with Makalsi was effortless. They delivered exactly what
+              we envisioned — then pushed it further. Exceptional studio."
+            </p>
+            <div class="mt-6 border-t border-white/12 pt-5">
+              <p class="text-sm font-semibold">Amara T.</p>
+              <p class="text-xs text-white/40 mt-0.5">Creative Director — Tempo</p>
+            </div>
+          </article>
+        </div>
+      </div>
+      <p class="section-label text-black/35">Client Reviews</p>
+    </section>
+
+    <!-- ======================= PRICING ======================= -->
+    <section id="pricing" class="relative bg-black divider-grid px-5 md:px-8 pt-28 pb-24">
+      <h2 class="huge-word absolute z-0 text-white/[0.04] top-[5%] left-1/2 -translate-x-1/2 pointer-events-none select-none">PRICING</h2>
+
+      <div class="relative z-10 max-w-6xl mx-auto">
+
+        <!-- Header -->
+        <div class="mb-14 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+          <div>
+            <p class="text-xs uppercase tracking-[0.2em] text-white/35 mb-3">08 / Pricing</p>
+            <h3 class="display text-white leading-none" style="font-size: clamp(2.4rem, 6vw, 4.8rem);">Transparent.<br/>No surprises.</h3>
+          </div>
+          <p class="text-white/40 text-sm max-w-xs leading-relaxed">All prices are starting points — final cost depends on scope. Every project gets a custom quote.</p>
+        </div>
+
+        <!-- Main 4-card grid -->
+        <div class="pricing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-white/8">
+
+          <!-- MARK -->
+          <div class="pricing-card bg-black p-8 flex flex-col gap-6">
+            <div>
+              <p class="text-[10px] uppercase tracking-[0.2em] text-white/30">01</p>
+              <h4 class="display text-3xl text-white leading-none mt-3">MARK</h4>
+              <p class="text-xs text-white/40 mt-2">Logo Design</p>
+            </div>
+            <ul class="flex-1 space-y-2.5 text-xs text-white/48">
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-white/30 rounded-full flex-shrink-0"></span>3 logo concepts</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-white/30 rounded-full flex-shrink-0"></span>2 rounds of revision</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-white/30 rounded-full flex-shrink-0"></span>All file formats</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-white/30 rounded-full flex-shrink-0"></span>Brand colour palette</li>
+            </ul>
+            <div class="border-t border-white/10 pt-6">
+              <p class="display text-4xl text-white leading-none">$38<span class="text-white/30 text-lg">+</span></p>
+              <p class="text-[10px] text-white/25 mt-1.5 uppercase tracking-[0.14em]">KSh 5,000+</p>
+              <a href="#join" class="mt-5 block text-center text-xs border border-white/20 py-3 text-white/55 hover:text-white hover:border-white/50 transition-colors">Start a project</a>
+            </div>
+          </div>
+
+          <!-- IDENTITY -->
+          <div class="pricing-card bg-black p-8 flex flex-col gap-6">
+            <div>
+              <p class="text-[10px] uppercase tracking-[0.2em] text-white/30">02</p>
+              <h4 class="display text-3xl text-white leading-none mt-3">IDENTITY</h4>
+              <p class="text-xs text-white/40 mt-2">Brand Identity System</p>
+            </div>
+            <ul class="flex-1 space-y-2.5 text-xs text-white/48">
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-white/30 rounded-full flex-shrink-0"></span>Logo + variations</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-white/30 rounded-full flex-shrink-0"></span>Typography system</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-white/30 rounded-full flex-shrink-0"></span>Colour palette</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-white/30 rounded-full flex-shrink-0"></span>Brand guidelines PDF</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-white/30 rounded-full flex-shrink-0"></span>Business card design</li>
+            </ul>
+            <div class="border-t border-white/10 pt-6">
+              <p class="display text-4xl text-white leading-none">$77<span class="text-white/30 text-lg">+</span></p>
+              <p class="text-[10px] text-white/25 mt-1.5 uppercase tracking-[0.14em]">KSh 10,000+</p>
+              <a href="#join" class="mt-5 block text-center text-xs border border-white/20 py-3 text-white/55 hover:text-white hover:border-white/50 transition-colors">Start a project</a>
+            </div>
+          </div>
+
+          <!-- WEB — highlighted -->
+          <div class="pricing-card bg-[#10B981] p-8 flex flex-col gap-6">
+            <div>
+              <p class="text-[10px] uppercase tracking-[0.2em] text-black/45">03 · Most Popular</p>
+              <h4 class="display text-3xl text-black leading-none mt-3">WEB</h4>
+              <p class="text-xs text-black/55 mt-2">Website Design & Build</p>
+            </div>
+            <ul class="flex-1 space-y-2.5 text-xs text-black/65">
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-black/40 rounded-full flex-shrink-0"></span>Up to 6 pages</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-black/40 rounded-full flex-shrink-0"></span>Mobile-first design</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-black/40 rounded-full flex-shrink-0"></span>GSAP animations</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-black/40 rounded-full flex-shrink-0"></span>SEO foundation</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-black/40 rounded-full flex-shrink-0"></span>CMS integration</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-black/40 rounded-full flex-shrink-0"></span>1 month support</li>
+            </ul>
+            <div class="border-t border-black/15 pt-6">
+              <p class="display text-4xl text-black leading-none">$230<span class="text-black/35 text-lg">+</span></p>
+              <p class="text-[10px] text-black/40 mt-1.5 uppercase tracking-[0.14em]">KSh 30,000+</p>
+              <a href="#join" class="mt-5 block text-center text-xs bg-black text-white py-3 font-semibold hover:bg-black/80 transition-colors">Start a project</a>
+            </div>
+          </div>
+
+          <!-- STORE -->
+          <div class="pricing-card bg-black p-8 flex flex-col gap-6">
+            <div>
+              <p class="text-[10px] uppercase tracking-[0.2em] text-white/30">04</p>
+              <h4 class="display text-3xl text-white leading-none mt-3">STORE</h4>
+              <p class="text-xs text-white/40 mt-2">E-commerce Store</p>
+            </div>
+            <ul class="flex-1 space-y-2.5 text-xs text-white/48">
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-white/30 rounded-full flex-shrink-0"></span>Shopify / WooCommerce</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-white/30 rounded-full flex-shrink-0"></span>Product setup</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-white/30 rounded-full flex-shrink-0"></span>Payment integration</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-white/30 rounded-full flex-shrink-0"></span>Mobile-first design</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-white/30 rounded-full flex-shrink-0"></span>Inventory system</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 bg-white/30 rounded-full flex-shrink-0"></span>Launch support</li>
+            </ul>
+            <div class="border-t border-white/10 pt-6">
+              <p class="display text-4xl text-white leading-none">$308<span class="text-white/30 text-lg">+</span></p>
+              <p class="text-[10px] text-white/25 mt-1.5 uppercase tracking-[0.14em]">KSh 40,000+</p>
+              <a href="#join" class="mt-5 block text-center text-xs border border-white/20 py-3 text-white/55 hover:text-white hover:border-white/50 transition-colors">Start a project</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Secondary row: Video + Bespoke -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/8 mt-px">
+          <div class="pricing-card bg-black p-8 flex flex-col sm:flex-row sm:items-center gap-6">
+            <div class="flex-1">
+              <p class="text-[10px] uppercase tracking-[0.2em] text-white/30 mb-3">05 · Video & Motion</p>
+              <h4 class="display text-2xl text-white leading-none">FILM</h4>
+              <p class="text-xs text-white/45 mt-3 max-w-xs leading-relaxed">Brand films, social reels, testimonials, and motion design. Priced per project scope.</p>
+            </div>
+            <div class="text-right sm:text-left flex-shrink-0">
+              <p class="display text-4xl text-white leading-none">$77<span class="text-white/30 text-lg">+</span></p>
+              <p class="text-[10px] text-white/25 mt-1.5 uppercase tracking-[0.14em]">KSh 10,000+</p>
+            </div>
+          </div>
+          <div class="pricing-card bg-[#4F46E5] p-8 flex flex-col sm:flex-row sm:items-center gap-6">
+            <div class="flex-1">
+              <p class="text-[10px] uppercase tracking-[0.2em] text-white/50 mb-3">Custom</p>
+              <h4 class="display text-2xl text-white leading-none">BESPOKE</h4>
+              <p class="text-xs text-white/65 mt-3 max-w-xs leading-relaxed">Need something that doesn't fit the boxes above? Let's scope it together.</p>
+            </div>
+            <a href="#join" class="flex items-center gap-2 text-xs bg-white text-black px-5 py-3 font-semibold hover:bg-white/90 transition-colors whitespace-nowrap flex-shrink-0">
+              Let's Talk
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5" stroke-width="1.5"></i>
+            </a>
+          </div>
+        </div>
+
+      </div>
+      <p class="section-label text-white/30">08 / Pricing</p>
+    </section>
+
+    <!-- ======================= 8 · SUPPORT FLOW ======================= -->
+    <section
+      id="support"
+      class="poster-section h-screen bg-[#4F46E5] divider-grid px-5 md:px-8 flex items-center"
+    >
+      <h2
+        id="supportWord"
+        class="huge-word absolute z-0 text-black/35 left-1/2 top-[46%] -translate-x-1/2 -translate-y-1/2"
+      >
+        SUPPORT
+      </h2>
+      <div
+        class="relative z-10 w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-3 pt-20 pb-20"
+      >
+        <article class="support-panel support-step">
+          <p class="text-xs uppercase tracking-[0.2em] text-white/45">
+            01 / Discovery
+          </p>
+          <h3 class="display text-5xl md:text-6xl leading-none mt-6">
+            BRIEF
+          </h3>
+          <p class="text-sm text-white/58 mt-6 max-w-[220px]">
+            We listen first. A deep-dive into your brand, goals, audience, and vision.
+          </p>
+        </article>
+        <article class="support-panel support-step bg-white text-black">
+          <p class="text-xs uppercase tracking-[0.2em] text-black/45">
+            02 / Creation
+          </p>
+          <h3 class="display text-5xl md:text-6xl leading-none mt-6">
+            DESIGN
+          </h3>
+          <a
+            href="#product"
+            class="mt-8 w-full bg-black text-white text-sm font-semibold py-3 rounded-full text-center block"
+          >
+            See Our Work
+          </a>
+        </article>
+        <article class="support-panel support-step">
+          <p class="text-xs uppercase tracking-[0.2em] text-white/45">
+            03 / Delivery
+          </p>
+          <h3 class="display text-5xl md:text-6xl leading-none mt-6">LAUNCH</h3>
+          <p class="text-sm text-white/58 mt-6 max-w-[220px]">
+            Your site goes live, optimised and ready to perform from day one.
+          </p>
+        </article>
+      </div>
+      <div
+        id="notifyCard"
+        class="absolute z-20 right-5 md:right-[9vw] bottom-[16vh] w-72 bg-white text-black p-4 shadow-[20px_24px_70px_rgba(0,0,0,0.38)] border border-black/10"
+      >
+        <div class="flex items-center justify-between">
+          <p class="text-xs uppercase tracking-[0.18em] text-black/45">
+            Project delivered
+          </p>
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+        </div>
+        <p class="display text-4xl leading-none mt-4">Live</p>
+        <p class="text-sm font-semibold mt-1">Bloom Skincare</p>
+        <p class="text-xs text-black/55 mt-2">Launched on schedule · 100/100 Lighthouse</p>
+      </div>
+    </section>
+
+    <!-- ======================= 9 · FINAL CTA BUILD-UP ======================= -->
+    <section id="cta-build" class="poster-section h-screen bg-black">
+      <div
+        id="wipeRose"
+        class="absolute inset-0 bg-[#F43F5E] origin-bottom scale-y-0"
+      ></div>
+      <div
+        id="wipeEmerald"
+        class="absolute inset-0 bg-[#10B981] origin-left scale-x-0"
+      ></div>
+      <div class="sweep-word text-white" id="seenWord">BRIEF</div>
+      <div class="sweep-word text-black" id="savedWord">DESIGN</div>
+      <div class="sweep-word text-white" id="supportedWord">LAUNCH</div>
+    </section>
+
+    <!-- ======================= 10 · FINAL CREATE / COMMUNITY ======================= -->
+    <section
+      id="join"
+      class="poster-section min-h-screen w-full z-10 flex flex-col bg-black"
+    >
+      <!-- CONTACT word background -->
+      <div class="relative flex-1 flex flex-col justify-end overflow-hidden">
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+          <h2
+            id="contactWord"
+            class="display text-white whitespace-nowrap select-none"
+            style="font-size: clamp(9rem, 27vw, 32rem); line-height: 0.82; letter-spacing: -0.055em;"
+          >
+            CONTACT
+          </h2>
+        </div>
+
+        <!-- Pienso-style green form panel -->
+        <div class="relative z-10 w-full max-w-4xl mx-auto px-4 md:px-8">
+          <div class="bg-[#10B981] p-8 md:p-12" id="contactForm">
+            <p class="text-xs uppercase tracking-[0.22em] text-black/50 mb-8">
+              Reach us
+            </p>
+            <form
+              class="grid grid-cols-1 md:grid-cols-2 gap-x-14"
+              onsubmit="handleFormSubmit(event)"
+            >
+              <input type="hidden" name="_subject" value="New Project Inquiry — Makalsi Creative Studio" />
+              <input type="hidden" name="_captcha" value="false" />
+              <input type="hidden" name="_template" value="table" />
+              <!-- Left: stacked underline fields -->
+              <div class="flex flex-col">
+                <div class="border-b border-black/22 py-4">
+                  <input
+                    type="text"
+                    placeholder="First Name"
+                    required
+                    class="w-full bg-transparent text-black placeholder-black/40 text-base outline-none"
+                  />
+                </div>
+                <div class="border-b border-black/22 py-4">
+                  <input
+                    type="text"
+                    placeholder="Last Name"
+                    class="w-full bg-transparent text-black placeholder-black/40 text-base outline-none"
+                  />
+                </div>
+                <div class="border-b border-black/22 py-4">
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    required
+                    class="w-full bg-transparent text-black placeholder-black/40 text-base outline-none"
+                  />
+                </div>
+                <div class="border-b border-black/22 py-4">
+                  <select
+                    class="w-full bg-transparent text-black/55 text-base outline-none appearance-none"
+                  >
+                    <option value="">Service needed</option>
+                    <option>Logo Design</option>
+                    <option>Brand Identity</option>
+                    <option>Graphic Design</option>
+                    <option>Web Design</option>
+                    <option>Web Development</option>
+                    <option>E-commerce</option>
+                    <option>Video Editing</option>
+                    <option>Videography</option>
+                    <option>Motion Design</option>
+                    <option>Campaign Design</option>
+                    <option>Strategy &amp; Consulting</option>
+                  </select>
+                </div>
+                <div class="flex items-start gap-3 mt-6">
+                  <input
+                    type="checkbox"
+                    class="mt-0.5 w-4 h-4 flex-shrink-0 accent-black"
+                  />
+                  <p class="text-xs text-black/52 leading-relaxed">
+                    I give Makalsi Creative Studio permission to contact me at
+                    this email address.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Right: large textarea + send -->
+              <div class="flex flex-col justify-between mt-8 md:mt-0">
+                <div class="border-b border-black/22 pb-2">
+                  <textarea
+                    placeholder="Type your message here"
+                    rows="8"
+                    class="w-full bg-transparent text-black placeholder-black/40 text-base outline-none resize-none"
+                  ></textarea>
+                </div>
+                <div class="mt-6 flex items-end justify-between gap-4 flex-wrap">
+                  <p class="text-xs text-black/42 max-w-[200px] leading-relaxed">
+                    Your information is kept private and never shared with
+                    third parties.
+                  </p>
+                  <div class="flex flex-col items-end gap-2">
+                    <button
+                      type="submit"
+                      id="formSubmitBtn"
+                      class="flex items-center gap-3 bg-black text-white text-sm font-semibold px-8 py-3.5 hover:bg-neutral-800 transition-colors"
+                    >
+                      Send
+                      <i
+                        data-lucide="arrow-right"
+                        class="w-4 h-4"
+                        stroke-width="1.5"
+                      ></i>
+                    </button>
+                    <p id="formSuccess" class="text-xs text-black/60 hidden">
+                      Sent! We'll be in touch soon.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <footer class="relative border-t border-white/10 z-20 bg-[#050505]">
+        <div
+          class="px-5 md:px-8 py-6 grid grid-cols-1 md:grid-cols-3 gap-6 text-white"
+        >
+          <div>
+            <p class="text-sm font-semibold">2026 © Makalsi Creative Studio</p>
+            <a
+              href="mailto:hello@makalsi.com"
+              class="text-sm underline underline-offset-2 hover:opacity-60 transition-opacity"
+            >
+              hello@makalsi.com
+            </a>
+            <div class="flex items-center gap-3 mt-3">
+              <a
+                href="https://www.instagram.com/makalsi.creative.studios/"
+                target="_blank"
+                rel="noopener"
+                class="hover:opacity-60 transition-opacity"
+                aria-label="Instagram"
+              >
+                <i
+                  data-lucide="instagram"
+                  class="w-4 h-4"
+                  stroke-width="1.5"
+                ></i>
+              </a>
+              <a
+                href="mailto:makalsicreativestudios@gmail.com"
+                class="hover:opacity-60 transition-opacity"
+                aria-label="Email"
+              >
+                <i data-lucide="at-sign" class="w-4 h-4" stroke-width="1.5"></i>
+              </a>
+              <a
+                href="https://wa.me/254757907927"
+                target="_blank"
+                rel="noopener"
+                class="hover:opacity-60 transition-opacity"
+                aria-label="WhatsApp"
+              >
+                <i data-lucide="message-circle" class="w-4 h-4" stroke-width="1.5"></i>
+              </a>
+            </div>
+          </div>
+          <div class="flex flex-col gap-1.5 text-sm">
+            <a href="#archive" class="hover:opacity-60 transition-opacity">
+              Selected Work
+            </a>
+            <a href="#board" class="hover:opacity-60 transition-opacity">
+              Services
+            </a>
+          </div>
+          <div class="flex flex-col gap-1.5 text-sm">
+            <a href="mailto:hello@makalsi.com" class="hover:opacity-60 transition-opacity">
+              hello@makalsi.com
+            </a>
+            <a href="https://wa.me/254757907927" target="_blank" rel="noopener" class="hover:opacity-60 transition-opacity">
+              WhatsApp
+            </a>
+          </div>
+        </div>
+      </footer>
+    </section>
+
+    <!-- ======================= CASE STUDY MODAL ======================= -->
+    <div id="caseStudyModal" class="fixed inset-0 z-[90] pointer-events-none" aria-hidden="true">
+      <!-- Backdrop -->
+      <div id="csBackdrop" class="absolute inset-0 bg-black/75 opacity-0" onclick="closeCaseStudy()"></div>
+
+      <!-- Sliding panel -->
+      <div id="csPanel" class="absolute top-0 right-0 h-full w-full md:w-[62vw] max-w-3xl bg-[#050505] text-white overflow-y-auto flex flex-col" style="transform: translateX(100%);">
+
+        <!-- Sticky header -->
+        <div class="sticky top-0 z-10 bg-[#050505] border-b border-white/10 flex items-center justify-between px-6 md:px-10 py-5">
+          <span class="text-xs uppercase tracking-[0.2em] text-white/40">Case Study</span>
+          <button onclick="closeCaseStudy()" class="w-9 h-9 flex items-center justify-center border border-white/20 hover:bg-white hover:text-black transition-colors rounded-sm" aria-label="Close">
+            <i data-lucide="x" class="w-4 h-4" stroke-width="1.5"></i>
+          </button>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 px-6 md:px-10 py-10">
+
+          <!-- Hero block -->
+          <div class="border-b border-white/10 pb-10 mb-10">
+            <div class="flex flex-wrap gap-2 mb-6">
+              <span class="text-[10px] uppercase tracking-[0.2em] border border-white/20 px-2.5 py-1 text-white/55">Web Design</span>
+              <span class="text-[10px] uppercase tracking-[0.2em] border border-white/20 px-2.5 py-1 text-white/55">Brand Identity</span>
+              <span class="text-[10px] uppercase tracking-[0.2em] border border-white/20 px-2.5 py-1 text-white/55">Nairobi · 2024</span>
+            </div>
+            <h2 class="display text-white leading-none mb-4" style="font-size: clamp(3rem, 8vw, 5.5rem);">DELPHI<br/>GRAPHICS</h2>
+            <p class="text-white/55 text-base leading-relaxed max-w-lg">
+              A full web redesign and brand consistency project for Nairobi's go-to print and branding house — built to convert visitors into clients.
+            </p>
+          </div>
+
+          <!-- Cover image -->
+          <div class="aspect-[16/9] bg-white/5 border border-white/8 mb-10 overflow-hidden">
+            <img src="images/delphi%201.jpg" alt="Delphi Graphics website" class="w-full h-full object-cover" />
+          </div>
+
+          <!-- The Brief -->
+          <div class="mb-10">
+            <p class="text-[10px] uppercase tracking-[0.22em] text-[#10B981] mb-4">01 / The Brief</p>
+            <h3 class="display text-3xl md:text-4xl text-white leading-none mb-5">Print Sharp.<br/>Brand Boldly.</h3>
+            <p class="text-white/58 leading-relaxed max-w-lg">
+              Delphi Graphics had the craft — years of delivering premium printing, signage, apparel, and event branding across Nairobi. What they needed was a digital presence that matched it. They came to Makalsi with one clear goal: a website that does the selling for them.
+            </p>
+          </div>
+
+          <!-- Divider -->
+          <div class="border-t border-white/8 mb-10"></div>
+
+          <!-- The Challenge -->
+          <div class="mb-10">
+            <p class="text-[10px] uppercase tracking-[0.22em] text-[#F43F5E] mb-4">02 / The Challenge</p>
+            <h3 class="display text-2xl md:text-3xl text-white leading-none mb-6">Three things were holding them back.</h3>
+            <div class="space-y-4">
+              <div class="flex gap-4 items-start">
+                <span class="display text-[#F43F5E] text-lg leading-none mt-0.5">01</span>
+                <div>
+                  <p class="text-sm font-semibold text-white mb-1">A buried service catalogue</p>
+                  <p class="text-sm text-white/50 leading-relaxed">Stationery, signage, apparel, merchandise, event branding — all hidden in a layout that made it hard to find what you needed.</p>
+                </div>
+              </div>
+              <div class="flex gap-4 items-start">
+                <span class="display text-[#F43F5E] text-lg leading-none mt-0.5">02</span>
+                <div>
+                  <p class="text-sm font-semibold text-white mb-1">No clear path to action</p>
+                  <p class="text-sm text-white/50 leading-relaxed">Visitors landed, scrolled, and left. There was no obvious next step — no strong CTA, no enquiry flow designed to convert interest into a conversation.</p>
+                </div>
+              </div>
+              <div class="flex gap-4 items-start">
+                <span class="display text-[#F43F5E] text-lg leading-none mt-0.5">03</span>
+                <div>
+                  <p class="text-sm font-semibold text-white mb-1">Brand inconsistency online</p>
+                  <p class="text-sm text-white/50 leading-relaxed">Their printed work was sharp and professional. Their digital presence wasn't. The gap was costing them credibility at first glance.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="border-t border-white/8 mb-10"></div>
+
+          <!-- Our Approach -->
+          <div class="mb-10">
+            <p class="text-[10px] uppercase tracking-[0.22em] text-[#4F46E5] mb-4">03 / Our Approach</p>
+            <h3 class="display text-2xl md:text-3xl text-white leading-none mb-5">We started with the why,<br/>not the pixels.</h3>
+            <p class="text-white/58 leading-relaxed mb-6 max-w-lg">
+              Before a single frame was designed, we ran a full UX and brand audit. We mapped how real users navigate a print services site, identified where the drop-offs were, and restructured the entire information architecture around one goal: make it effortless to understand what Delphi does and easy to get in touch.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/8">
+              <div class="bg-[#050505] p-5">
+                <p class="text-[10px] uppercase tracking-[0.18em] text-white/35 mb-2">Phase 01</p>
+                <p class="text-sm font-semibold text-white">Discovery & Audit</p>
+                <p class="text-xs text-white/45 mt-1">UX review · service mapping · competitor analysis</p>
+              </div>
+              <div class="bg-[#050505] p-5">
+                <p class="text-[10px] uppercase tracking-[0.18em] text-white/35 mb-2">Phase 02</p>
+                <p class="text-sm font-semibold text-white">Architecture & Strategy</p>
+                <p class="text-xs text-white/45 mt-1">Site structure · user journeys · CTA planning</p>
+              </div>
+              <div class="bg-[#050505] p-5">
+                <p class="text-[10px] uppercase tracking-[0.18em] text-white/35 mb-2">Phase 03</p>
+                <p class="text-sm font-semibold text-white">Design & Build</p>
+                <p class="text-xs text-white/45 mt-1">UI design · responsive development · brand system</p>
+              </div>
+              <div class="bg-[#050505] p-5">
+                <p class="text-[10px] uppercase tracking-[0.18em] text-white/35 mb-2">Phase 04</p>
+                <p class="text-sm font-semibold text-white">Launch & Optimise</p>
+                <p class="text-xs text-white/45 mt-1">Performance tuning · SEO · go-live</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Deliverables image strip -->
+          <div class="grid grid-cols-3 gap-2 mb-10">
+            <img src="images/delphi%201.jpg" alt="Delphi Graphics page 1" class="aspect-[3/2] object-cover w-full" />
+            <img src="images/delphi%202.jpg" alt="Delphi Graphics page 2" class="aspect-[3/2] object-cover w-full" />
+            <img src="images/delphi%203.jpg" alt="Delphi Graphics page 3" class="aspect-[3/2] object-cover w-full" />
+          </div>
+
+          <!-- Divider -->
+          <div class="border-t border-white/8 mb-10"></div>
+
+          <!-- What We Built -->
+          <div class="mb-10">
+            <p class="text-[10px] uppercase tracking-[0.22em] text-white/40 mb-4">04 / Deliverables</p>
+            <h3 class="display text-2xl md:text-3xl text-white leading-none mb-6">Everything they needed.<br/>Nothing they didn't.</h3>
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 border-b border-white/8 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#10B981] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">Full website redesign — mobile-first, fully responsive</span>
+              </div>
+              <div class="flex items-center gap-3 border-b border-white/8 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#10B981] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">Structured service pages: Print · Apparel · Signage · Merch · Events</span>
+              </div>
+              <div class="flex items-center gap-3 border-b border-white/8 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#10B981] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">Enquiry-optimised contact and quote request flow</span>
+              </div>
+              <div class="flex items-center gap-3 border-b border-white/8 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#10B981] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">Brand consistency system carried through every page</span>
+              </div>
+              <div class="flex items-center gap-3 border-b border-white/8 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#10B981] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">Customer testimonial section — 4.9 / 5 social proof</span>
+              </div>
+              <div class="flex items-center gap-3 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#10B981] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">Lighthouse performance score 95+ · fast load · SEO-ready</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="border-t border-white/8 mb-10"></div>
+
+          <!-- Results -->
+          <div class="mb-10">
+            <p class="text-[10px] uppercase tracking-[0.22em] text-[#10B981] mb-4">05 / The Outcome</p>
+            <h3 class="display text-2xl md:text-3xl text-white leading-none mb-8">A site that works as hard<br/>as the team behind it.</h3>
+            <div class="grid grid-cols-3 gap-px bg-white/8">
+              <div class="bg-[#050505] p-6 text-center">
+                <p class="display text-4xl text-white">95<span class="text-[#10B981]">+</span></p>
+                <p class="text-xs text-white/35 mt-2 uppercase tracking-[0.16em]">Lighthouse Score</p>
+              </div>
+              <div class="bg-[#050505] p-6 text-center">
+                <p class="display text-4xl text-white">4.9<span class="text-[#10B981]">/5</span></p>
+                <p class="text-xs text-white/35 mt-2 uppercase tracking-[0.16em]">Client Rating</p>
+              </div>
+              <div class="bg-[#050505] p-6 text-center">
+                <p class="display text-4xl text-white">100<span class="text-[#10B981]">%</span></p>
+                <p class="text-xs text-white/35 mt-2 uppercase tracking-[0.16em]">Mobile Optimised</p>
+              </div>
+            </div>
+            <p class="text-white/50 text-sm leading-relaxed mt-6 max-w-lg">
+              Delphi Graphics now has a digital home that reflects the premium quality of their work — clear, bold, and built to convert. Every visitor knows exactly what they offer and exactly how to reach them.
+            </p>
+          </div>
+
+          <!-- CTA -->
+          <div class="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <p class="text-sm font-semibold text-white">Ready to work together?</p>
+              <p class="text-xs text-white/40 mt-0.5">Let's build something impossible to ignore.</p>
+            </div>
+            <div class="flex gap-3">
+              <a
+                href="https://delphi-graphics.vercel.app/"
+                target="_blank"
+                rel="noopener"
+                class="flex items-center gap-2 text-xs border border-white/25 px-4 py-2.5 text-white/70 hover:text-white hover:border-white/50 transition-colors"
+              >
+                <i data-lucide="external-link" class="w-3.5 h-3.5" stroke-width="1.5"></i>
+                Live Site
+              </a>
+              <a
+                href="#join"
+                onclick="closeCaseStudy()"
+                class="flex items-center gap-2 text-xs bg-white text-black px-4 py-2.5 font-semibold hover:bg-white/90 transition-colors"
+              >
+                Start a Project
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5" stroke-width="1.5"></i>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================= ROLLING FITNESS CASE STUDY MODAL ======================= -->
+    <div id="rfModal" class="fixed inset-0 z-[90] pointer-events-none" aria-hidden="true">
+      <div id="rfBackdrop" class="absolute inset-0 bg-black/75 opacity-0" onclick="closeRFCaseStudy()"></div>
+
+      <div id="rfPanel" class="absolute top-0 right-0 h-full w-full md:w-[62vw] max-w-3xl bg-[#050505] text-white overflow-y-auto flex flex-col" style="transform: translateX(100%);">
+
+        <div class="sticky top-0 z-10 bg-[#050505] border-b border-white/10 flex items-center justify-between px-6 md:px-10 py-5">
+          <span class="text-xs uppercase tracking-[0.2em] text-white/40">Case Study</span>
+          <button onclick="closeRFCaseStudy()" class="w-9 h-9 flex items-center justify-center border border-white/20 hover:bg-white hover:text-black transition-colors rounded-sm" aria-label="Close">
+            <i data-lucide="x" class="w-4 h-4" stroke-width="1.5"></i>
+          </button>
+        </div>
+
+        <div class="flex-1 px-6 md:px-10 py-10">
+
+          <!-- Hero block -->
+          <div class="border-b border-white/10 pb-10 mb-10">
+            <div class="flex flex-wrap gap-2 mb-6">
+              <span class="text-[10px] uppercase tracking-[0.2em] border border-white/20 px-2.5 py-1 text-white/55">E-commerce</span>
+              <span class="text-[10px] uppercase tracking-[0.2em] border border-white/20 px-2.5 py-1 text-white/55">Brand Identity</span>
+              <span class="text-[10px] uppercase tracking-[0.2em] border border-[#EA580C]/60 px-2.5 py-1 text-[#EA580C]">Kenya · 2024</span>
+            </div>
+            <h2 class="display text-white leading-none mb-4" style="font-size: clamp(2.6rem, 7vw, 5rem);">ROLLING<br/>TOTAL<br/>FITNESS</h2>
+            <p class="text-white/55 text-base leading-relaxed max-w-lg">
+              A high-performance e-commerce build for Kenya's premium supplements brand — 160+ products, nationwide delivery, and a conversion engine built to fuel gains.
+            </p>
+          </div>
+
+          <!-- Cover -->
+          <div class="aspect-[16/9] bg-white/5 border border-white/8 mb-10 overflow-hidden">
+            <img src="images/rolling%20fit.jpg" alt="Rolling Total Fitness website" class="w-full h-full object-cover" />
+          </div>
+
+          <!-- Brief -->
+          <div class="mb-10">
+            <p class="text-[10px] uppercase tracking-[0.22em] text-[#EA580C] mb-4">01 / The Brief</p>
+            <h3 class="display text-3xl md:text-4xl text-white leading-none mb-5">Quality you can trust.<br/>Results you can feel.</h3>
+            <p class="text-white/58 leading-relaxed max-w-lg">
+              Rolling Total Fitness had the products — lab-tested proteins, pre-workouts, vitamins, and weight management supplements trusted by athletes across Kenya. What they needed was an e-commerce platform that matched their ambition: one that could handle a growing catalogue of 160+ SKUs, drive conversions, and position them as the premium choice in a competitive supplement market.
+            </p>
+          </div>
+
+          <div class="border-t border-white/8 mb-10"></div>
+
+          <!-- Challenge -->
+          <div class="mb-10">
+            <p class="text-[10px] uppercase tracking-[0.22em] text-[#F43F5E] mb-4">02 / The Challenge</p>
+            <h3 class="display text-2xl md:text-3xl text-white leading-none mb-6">160+ products.<br/>Zero clear structure.</h3>
+            <div class="space-y-4">
+              <div class="flex gap-4 items-start">
+                <span class="display text-[#EA580C] text-lg leading-none mt-0.5">01</span>
+                <div>
+                  <p class="text-sm font-semibold text-white mb-1">A catalogue without architecture</p>
+                  <p class="text-sm text-white/50 leading-relaxed">Protein, pre-workout, vitamins, weight management — 160+ products across four categories with no browsing structure that made sense to a customer in a hurry.</p>
+                </div>
+              </div>
+              <div class="flex gap-4 items-start">
+                <span class="display text-[#EA580C] text-lg leading-none mt-0.5">02</span>
+                <div>
+                  <p class="text-sm font-semibold text-white mb-1">No brand identity in a crowded market</p>
+                  <p class="text-sm text-white/50 leading-relaxed">The supplement space in Kenya is noisy. Without a distinct visual identity and strong trust signals, Rolling was being lost in a sea of generic competitors.</p>
+                </div>
+              </div>
+              <div class="flex gap-4 items-start">
+                <span class="display text-[#EA580C] text-lg leading-none mt-0.5">03</span>
+                <div>
+                  <p class="text-sm font-semibold text-white mb-1">Promotions not converting</p>
+                  <p class="text-sm text-white/50 leading-relaxed">Strong offers — Buy 2 Get 1 Free, first-order discounts — were buried or absent entirely. The commercial ammunition was there; the site just wasn't firing it.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-t border-white/8 mb-10"></div>
+
+          <!-- Approach -->
+          <div class="mb-10">
+            <p class="text-[10px] uppercase tracking-[0.22em] text-[#4F46E5] mb-4">03 / Our Approach</p>
+            <h3 class="display text-2xl md:text-3xl text-white leading-none mb-5">Built like an athlete.<br/>Optimised like a machine.</h3>
+            <p class="text-white/58 leading-relaxed mb-6 max-w-lg">
+              We treated the site build like a training programme — structured, purposeful, and tracked. Every design decision was tied to a commercial outcome: increase average order value, reduce drop-off, and build the trust needed to convert a first-time visitor into a repeat customer.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/8">
+              <div class="bg-[#050505] p-5">
+                <p class="text-[10px] uppercase tracking-[0.18em] text-white/35 mb-2">Phase 01</p>
+                <p class="text-sm font-semibold text-white">Product Architecture</p>
+                <p class="text-xs text-white/45 mt-1">Catalogue audit · category structure · filtering logic</p>
+              </div>
+              <div class="bg-[#050505] p-5">
+                <p class="text-[10px] uppercase tracking-[0.18em] text-white/35 mb-2">Phase 02</p>
+                <p class="text-sm font-semibold text-white">Brand & Visual Identity</p>
+                <p class="text-xs text-white/45 mt-1">Athletic aesthetic · colour system · trust badge design</p>
+              </div>
+              <div class="bg-[#050505] p-5">
+                <p class="text-[10px] uppercase tracking-[0.18em] text-white/35 mb-2">Phase 03</p>
+                <p class="text-sm font-semibold text-white">E-commerce Build</p>
+                <p class="text-xs text-white/45 mt-1">Product pages · promotions engine · checkout flow · mobile-first</p>
+              </div>
+              <div class="bg-[#050505] p-5">
+                <p class="text-[10px] uppercase tracking-[0.18em] text-white/35 mb-2">Phase 04</p>
+                <p class="text-sm font-semibold text-white">Launch & CRO</p>
+                <p class="text-xs text-white/45 mt-1">Conversion rate optimisation · performance tuning · Kenya SEO</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image strip -->
+          <div class="grid grid-cols-3 gap-2 mb-10">
+            <img src="images/rolling%20fit.jpg" alt="Rolling Total Fitness page 1" class="aspect-[3/2] object-cover w-full" />
+            <img src="images/rolling%202.jpg" alt="Rolling Total Fitness page 2" class="aspect-[3/2] object-cover w-full" />
+            <img src="images/rolling%203.jpg" alt="Rolling Total Fitness page 3" class="aspect-[3/2] object-cover w-full" />
+          </div>
+
+          <div class="border-t border-white/8 mb-10"></div>
+
+          <!-- Deliverables -->
+          <div class="mb-10">
+            <p class="text-[10px] uppercase tracking-[0.22em] text-white/40 mb-4">04 / Deliverables</p>
+            <h3 class="display text-2xl md:text-3xl text-white leading-none mb-6">Every feature<br/>earned its place.</h3>
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 border-b border-white/8 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#EA580C] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">Full e-commerce website — mobile-first, fully responsive</span>
+              </div>
+              <div class="flex items-center gap-3 border-b border-white/8 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#EA580C] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">160+ products across 4 structured categories</span>
+              </div>
+              <div class="flex items-center gap-3 border-b border-white/8 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#EA580C] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">Promotions engine — Buy 2 Get 1 Free, first-order discount (ROLL20)</span>
+              </div>
+              <div class="flex items-center gap-3 border-b border-white/8 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#EA580C] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">Trust signal system — lab-tested badges, 30-day returns, 24hr shipping</span>
+              </div>
+              <div class="flex items-center gap-3 border-b border-white/8 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#EA580C] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">Nationwide Kenya delivery integration — free shipping over KShs 75</span>
+              </div>
+              <div class="flex items-center gap-3 border-b border-white/8 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#EA580C] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">Athletic brand identity system — bold, high-contrast, gym-culture aesthetic</span>
+              </div>
+              <div class="flex items-center gap-3 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#EA580C] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">Kenya e-commerce SEO — optimised for supplement searches nationwide</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-t border-white/8 mb-10"></div>
+
+          <!-- Results -->
+          <div class="mb-10">
+            <p class="text-[10px] uppercase tracking-[0.22em] text-[#EA580C] mb-4">05 / The Outcome</p>
+            <h3 class="display text-2xl md:text-3xl text-white leading-none mb-8">A store that trains<br/>as hard as its customers.</h3>
+            <div class="grid grid-cols-3 gap-px bg-white/8">
+              <div class="bg-[#050505] p-6 text-center">
+                <p class="display text-4xl text-white">160<span class="text-[#EA580C]">+</span></p>
+                <p class="text-xs text-white/35 mt-2 uppercase tracking-[0.16em]">Products Live</p>
+              </div>
+              <div class="bg-[#050505] p-6 text-center">
+                <p class="display text-4xl text-white">4</p>
+                <p class="text-xs text-white/35 mt-2 uppercase tracking-[0.16em]">Categories Built</p>
+              </div>
+              <div class="bg-[#050505] p-6 text-center">
+                <p class="display text-4xl text-white">24<span class="text-[#EA580C]">hr</span></p>
+                <p class="text-xs text-white/35 mt-2 uppercase tracking-[0.16em]">Shipping Nationwide</p>
+              </div>
+            </div>
+            <p class="text-white/50 text-sm leading-relaxed mt-6 max-w-lg">
+              Rolling Total Fitness launched with a store that could scale with them — clear product navigation, active promotions driving average order value, and a brand identity that stands out in Kenya's crowded supplement market.
+            </p>
+          </div>
+
+          <!-- CTA -->
+          <div class="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <p class="text-sm font-semibold text-white">Want the same for your brand?</p>
+              <p class="text-xs text-white/40 mt-0.5">Let's build something impossible to ignore.</p>
+            </div>
+            <div class="flex gap-3">
+              <a
+                href="https://rolling-fitness.vercel.app/"
+                target="_blank"
+                rel="noopener"
+                class="flex items-center gap-2 text-xs border border-white/25 px-4 py-2.5 text-white/70 hover:text-white hover:border-white/50 transition-colors"
+              >
+                <i data-lucide="external-link" class="w-3.5 h-3.5" stroke-width="1.5"></i>
+                Live Site
+              </a>
+              <a
+                href="#join"
+                onclick="closeRFCaseStudy()"
+                class="flex items-center gap-2 text-xs bg-white text-black px-4 py-2.5 font-semibold hover:bg-white/90 transition-colors"
+              >
+                Start a Project
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5" stroke-width="1.5"></i>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================= RED GINGER CASE STUDY MODAL ======================= -->
+    <div id="rgModal" class="fixed inset-0 z-[90] pointer-events-none" aria-hidden="true">
+      <div id="rgBackdrop" class="absolute inset-0 bg-black/75 opacity-0" onclick="closeRGCaseStudy()"></div>
+
+      <div id="rgPanel" class="absolute top-0 right-0 h-full w-full md:w-[62vw] max-w-3xl bg-[#050505] text-white overflow-y-auto flex flex-col" style="transform: translateX(100%);">
+
+        <!-- Sticky header -->
+        <div class="sticky top-0 z-10 bg-[#050505] border-b border-white/10 flex items-center justify-between px-6 md:px-10 py-5">
+          <span class="text-xs uppercase tracking-[0.2em] text-white/40">Case Study</span>
+          <button onclick="closeRGCaseStudy()" class="w-9 h-9 flex items-center justify-center border border-white/20 hover:bg-white hover:text-black transition-colors rounded-sm" aria-label="Close">
+            <i data-lucide="x" class="w-4 h-4" stroke-width="1.5"></i>
+          </button>
+        </div>
+
+        <div class="flex-1 px-6 md:px-10 py-10">
+
+          <!-- Hero block -->
+          <div class="border-b border-white/10 pb-10 mb-10">
+            <div class="flex flex-wrap gap-2 mb-6">
+              <span class="text-[10px] uppercase tracking-[0.2em] border border-white/20 px-2.5 py-1 text-white/55">Restaurant Web</span>
+              <span class="text-[10px] uppercase tracking-[0.2em] border border-white/20 px-2.5 py-1 text-white/55">Brand Identity</span>
+              <span class="text-[10px] uppercase tracking-[0.2em] border border-[#B91C1C]/60 px-2.5 py-1 text-[#B91C1C]">Nairobi · 2024</span>
+            </div>
+            <h2 class="display text-white leading-none mb-4" style="font-size: clamp(3rem, 8vw, 5.5rem);">RED<br/>GINGER</h2>
+            <p class="text-white/55 text-base leading-relaxed max-w-lg">
+              A full website redesign for Nairobi's premier Pan-Asian dining experience — built to put the food front and centre and turn browsers into diners.
+            </p>
+          </div>
+
+          <!-- Cover image -->
+          <div class="aspect-[16/9] bg-white/5 border border-white/8 mb-10 overflow-hidden">
+            <img src="images/red%20ginger%201.jpg" alt="Red Ginger restaurant website" class="w-full h-full object-cover" />
+          </div>
+
+          <!-- The Brief -->
+          <div class="mb-10">
+            <p class="text-[10px] uppercase tracking-[0.22em] text-[#B91C1C] mb-4">01 / The Brief</p>
+            <h3 class="display text-3xl md:text-4xl text-white leading-none mb-5">Bold flavours.<br/>Asian craft.</h3>
+            <p class="text-white/58 leading-relaxed max-w-lg">
+              Red Ginger had the cuisine, the atmosphere, and the reputation. What they lacked was a digital home that matched the experience of walking through their doors. Serving Japanese, Thai, Vietnamese, and Korean dishes from 2nd Parklands Avenue, they needed a site that made people hungry before they even arrived.
+            </p>
+          </div>
+
+          <div class="border-t border-white/8 mb-10"></div>
+
+          <!-- The Challenge -->
+          <div class="mb-10">
+            <p class="text-[10px] uppercase tracking-[0.22em] text-[#F43F5E] mb-4">02 / The Challenge</p>
+            <h3 class="display text-2xl md:text-3xl text-white leading-none mb-6">Great food deserves<br/>a great first impression.</h3>
+            <div class="space-y-4">
+              <div class="flex gap-4 items-start">
+                <span class="display text-[#B91C1C] text-lg leading-none mt-0.5">01</span>
+                <div>
+                  <p class="text-sm font-semibold text-white mb-1">No visual storytelling</p>
+                  <p class="text-sm text-white/50 leading-relaxed">The existing presence didn't showcase the food, the atmosphere, or the craft behind the kitchen. Visitors couldn't feel the experience before visiting.</p>
+                </div>
+              </div>
+              <div class="flex gap-4 items-start">
+                <span class="display text-[#B91C1C] text-lg leading-none mt-0.5">02</span>
+                <div>
+                  <p class="text-sm font-semibold text-white mb-1">Menu buried and hard to browse</p>
+                  <p class="text-sm text-white/50 leading-relaxed">16+ signature sushi rolls, small plates, and large plates across four Asian cuisines — all hidden behind poor navigation that left diners guessing.</p>
+                </div>
+              </div>
+              <div class="flex gap-4 items-start">
+                <span class="display text-[#B91C1C] text-lg leading-none mt-0.5">03</span>
+                <div>
+                  <p class="text-sm font-semibold text-white mb-1">Private events not being captured</p>
+                  <p class="text-sm text-white/50 leading-relaxed">Date nights, proposals, and group bookings — high-value opportunities with no dedicated page, no enquiry flow, and no way for the site to do the selling.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-t border-white/8 mb-10"></div>
+
+          <!-- Approach -->
+          <div class="mb-10">
+            <p class="text-[10px] uppercase tracking-[0.22em] text-[#4F46E5] mb-4">03 / Our Approach</p>
+            <h3 class="display text-2xl md:text-3xl text-white leading-none mb-5">Food-first.<br/>Conversion-always.</h3>
+            <p class="text-white/58 leading-relaxed mb-6 max-w-lg">
+              We designed around the dining journey — from the moment someone searches for a restaurant to the moment they make a booking. Every section was built to reduce friction and increase appetite.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/8">
+              <div class="bg-[#050505] p-5">
+                <p class="text-[10px] uppercase tracking-[0.18em] text-white/35 mb-2">Phase 01</p>
+                <p class="text-sm font-semibold text-white">Discovery & Dining Journey Mapping</p>
+                <p class="text-xs text-white/45 mt-1">User research · competitor dining sites · menu architecture</p>
+              </div>
+              <div class="bg-[#050505] p-5">
+                <p class="text-[10px] uppercase tracking-[0.18em] text-white/35 mb-2">Phase 02</p>
+                <p class="text-sm font-semibold text-white">Visual Strategy</p>
+                <p class="text-xs text-white/45 mt-1">Food photography hierarchy · colour direction · typography</p>
+              </div>
+              <div class="bg-[#050505] p-5">
+                <p class="text-[10px] uppercase tracking-[0.18em] text-white/35 mb-2">Phase 03</p>
+                <p class="text-sm font-semibold text-white">Design & Development</p>
+                <p class="text-xs text-white/45 mt-1">UI design · mobile-first build · menu pages · events section</p>
+              </div>
+              <div class="bg-[#050505] p-5">
+                <p class="text-[10px] uppercase tracking-[0.18em] text-white/35 mb-2">Phase 04</p>
+                <p class="text-sm font-semibold text-white">Launch & SEO</p>
+                <p class="text-xs text-white/45 mt-1">Performance tuning · local SEO · Nairobi dining search optimisation</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image strip -->
+          <div class="grid grid-cols-3 gap-2 mb-10">
+            <img src="images/red%20ginger%201.jpg" alt="Red Ginger page 1" class="aspect-[3/2] object-cover w-full" />
+            <img src="images/red%20ginger%202.jpg" alt="Red Ginger page 2" class="aspect-[3/2] object-cover w-full" />
+            <img src="images/red%20ginger%203.jpg" alt="Red Ginger page 3" class="aspect-[3/2] object-cover w-full" />
+          </div>
+
+          <div class="border-t border-white/8 mb-10"></div>
+
+          <!-- Deliverables -->
+          <div class="mb-10">
+            <p class="text-[10px] uppercase tracking-[0.22em] text-white/40 mb-4">04 / Deliverables</p>
+            <h3 class="display text-2xl md:text-3xl text-white leading-none mb-6">Everything a restaurant<br/>website needs to work.</h3>
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 border-b border-white/8 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#B91C1C] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">Full restaurant website redesign — mobile-first, fully responsive</span>
+              </div>
+              <div class="flex items-center gap-3 border-b border-white/8 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#B91C1C] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">Full menu showcase: 16+ sushi rolls, small plates, large plates</span>
+              </div>
+              <div class="flex items-center gap-3 border-b border-white/8 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#B91C1C] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">Private events & group bookings section</span>
+              </div>
+              <div class="flex items-center gap-3 border-b border-white/8 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#B91C1C] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">Date night & proposal package pages</span>
+              </div>
+              <div class="flex items-center gap-3 border-b border-white/8 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#B91C1C] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">Reservation and contact flow optimised for conversion</span>
+              </div>
+              <div class="flex items-center gap-3 border-b border-white/8 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#B91C1C] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">Brand photography integration — food-first visual hierarchy</span>
+              </div>
+              <div class="flex items-center gap-3 pb-3">
+                <i data-lucide="check" class="w-4 h-4 text-[#B91C1C] flex-shrink-0" stroke-width="2.5"></i>
+                <span class="text-sm text-white/75">Local SEO optimised for Nairobi restaurant searches</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-t border-white/8 mb-10"></div>
+
+          <!-- Results -->
+          <div class="mb-10">
+            <p class="text-[10px] uppercase tracking-[0.22em] text-[#B91C1C] mb-4">05 / The Outcome</p>
+            <h3 class="display text-2xl md:text-3xl text-white leading-none mb-8">A site that makes people<br/>hungry before they arrive.</h3>
+            <div class="grid grid-cols-3 gap-px bg-white/8">
+              <div class="bg-[#050505] p-6 text-center">
+                <p class="display text-4xl text-white">4<span class="text-[#B91C1C]">+</span></p>
+                <p class="text-xs text-white/35 mt-2 uppercase tracking-[0.16em]">Cuisines Showcased</p>
+              </div>
+              <div class="bg-[#050505] p-6 text-center">
+                <p class="display text-4xl text-white">16<span class="text-[#B91C1C]">+</span></p>
+                <p class="text-xs text-white/35 mt-2 uppercase tracking-[0.16em]">Sushi Rolls Listed</p>
+              </div>
+              <div class="bg-[#050505] p-6 text-center">
+                <p class="display text-4xl text-white">100<span class="text-[#B91C1C]">%</span></p>
+                <p class="text-xs text-white/35 mt-2 uppercase tracking-[0.16em]">Mobile Optimised</p>
+              </div>
+            </div>
+            <p class="text-white/50 text-sm leading-relaxed mt-6 max-w-lg">
+              Red Ginger now has a digital presence as bold as their flavours — a site that tells the story, showcases the menu, and captures reservations and private event enquiries without a phone call needed.
+            </p>
+          </div>
+
+          <!-- CTA -->
+          <div class="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <p class="text-sm font-semibold text-white">Want the same for your brand?</p>
+              <p class="text-xs text-white/40 mt-0.5">Let's build something impossible to ignore.</p>
+            </div>
+            <div class="flex gap-3">
+              <a
+                href="https://redginger.vercel.app/"
+                target="_blank"
+                rel="noopener"
+                class="flex items-center gap-2 text-xs border border-white/25 px-4 py-2.5 text-white/70 hover:text-white hover:border-white/50 transition-colors"
+              >
+                <i data-lucide="external-link" class="w-3.5 h-3.5" stroke-width="1.5"></i>
+                Live Site
+              </a>
+              <a
+                href="#join"
+                onclick="closeRGCaseStudy()"
+                class="flex items-center gap-2 text-xs bg-white text-black px-4 py-2.5 font-semibold hover:bg-white/90 transition-colors"
+              >
+                Start a Project
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5" stroke-width="1.5"></i>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script>
+      lucide.createIcons();
+      gsap.registerPlugin(ScrollTrigger);
+
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const noemaLoader = document.querySelector('#noemaLoader');
+
+      if (reducedMotion && noemaLoader) {
+        document.body.classList.remove('is-loading');
+        noemaLoader.remove();
+      }
+
+      if (!reducedMotion) {
+        /* ---------- 0 · on load intro ---------- */
+        const loader = document.querySelector('#noemaLoader');
+
+        gsap.set(['nav', '#createcta', '#heroWord', '#heroCopy'], { autoAlpha: 0 });
+        gsap.set(['#card1', '#card2', '#card3'], { autoAlpha: 0 });
+        gsap.set('.loader-logo', { scale: 0.88, autoAlpha: 0 });
+        gsap.set(['.loader-tag', '.loader-meta'], { y: 14, autoAlpha: 0 });
+        gsap.set('.loader-scanline', { scaleX: 0 });
+
+        const onLoadTimeline = gsap.timeline({
+          defaults: { ease: 'power3.out' },
+          onComplete: () => {
+            document.body.classList.remove('is-loading');
+            if (loader) loader.remove();
+            ScrollTrigger.refresh();
+          }
+        });
+
+        onLoadTimeline
+          .to('.loader-logo', { scale: 1, autoAlpha: 1, duration: 0.72, ease: 'expo.out' }, 0.1)
+          .to('.loader-tag', { y: 0, autoAlpha: 1, duration: 0.44 }, 0.54)
+          .to('.loader-meta', { y: 0, autoAlpha: 1, duration: 0.42 }, 0.66)
+          .to('.loader-brand', { y: -22, scale: 0.94, duration: 0.52, ease: 'power2.inOut' }, 1.05)
+          .to('.loader-scanline', { scaleX: 1, duration: 0.46, ease: 'power2.inOut' }, 1.08)
+          .to('.loader-strip', { scaleY: 1, duration: 0.72, stagger: { each: 0.065, from: 'start' }, ease: 'expo.inOut' }, 1.16)
+          .to('#noemaLoader', { yPercent: -100, duration: 0.76, ease: 'expo.inOut' }, 1.82)
+          .to(['nav', '#createcta'], { autoAlpha: 1, y: 0, duration: 0.48, stagger: 0.045, ease: 'power2.out' }, 1.96)
+          .fromTo('#heroWord', { autoAlpha: 0, y: 36, scale: 0.94 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.84, ease: 'expo.out' }, 1.94)
+          .fromTo(['#card1', '#card2', '#card3'], { y: 95, autoAlpha: 0 }, { y: 0, autoAlpha: 1, stagger: 0.1, duration: 0.82, ease: 'power3.out' }, 2.16)
+          .fromTo('#heroCopy', { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.62, ease: 'power2.out' }, 2.38);
+
+        /* ---------- 1 · hero pinned ---------- */
+        const heroTimeline = gsap.timeline({
+          scrollTrigger: { trigger: '#hero', start: 'top top', end: '+=130%', scrub: 1, pin: true }
+        });
+        heroTimeline
+          .to('#card1', { x: '-16vw', y: '6vh', rotate: -16, ease: 'none' }, 0)
+          .to('#card3', { x: '16vw', y: '-5vh', rotate: 16, ease: 'none' }, 0)
+          .to('#card2', { y: '-9vh', rotate: 4, scale: 1.05, ease: 'none' }, 0)
+          .to('#heroWord', { scale: 1.12, y: '-6vh', ease: 'none' }, 0)
+          .to('#heroCopy', { autoAlpha: 0, y: 40, ease: 'none' }, 0.3);
+
+        /* ---------- 2 · interlude ---------- */
+        const interludeTimeline = gsap.timeline({
+          scrollTrigger: { trigger: '#interlude', start: 'top top', end: '+=130%', scrub: 1, pin: true }
+        });
+        interludeTimeline
+          .fromTo('#artistsWord', { x: '24vw', rotate: 5 }, { x: '-58vw', rotate: -3, ease: 'none' }, 0)
+          .fromTo('#brush1', { x: '-8vw', scale: 0.6, rotate: -20 }, { x: '6vw', scale: 1.15, rotate: 4, ease: 'none' }, 0)
+          .fromTo('#brush2', { y: '14vh', scale: 0.5 }, { y: '-8vh', scale: 1.1, ease: 'none' }, 0)
+          .from('#interludeCopy', { autoAlpha: 0, y: 40, ease: 'none' }, 0.2);
+
+        /* ---------- 3 · product ---------- */
+        const productTimeline = gsap.timeline({
+          scrollTrigger: { trigger: '#product', start: 'top top', end: '+=170%', scrub: 1, pin: true }
+        });
+        productTimeline
+          .fromTo('#walletPass', { x: '-65vw', y: '24vh', rotate: -32 }, { x: 0, y: 0, rotate: -7, ease: 'none' }, 0)
+          .fromTo('#phoneMock', { x: '65vw', y: '32vh', rotate: 28 }, { x: 0, y: 0, rotate: 7, ease: 'none' }, 0.08)
+          .fromTo('#theCardWord', { y: '8vh', scale: 1.05 }, { y: '-8vh', scale: 1, ease: 'none' }, 0)
+          .to('#walletPass', { y: '-4vh', rotate: -9, ease: 'none' }, 0.7)
+          .to('#phoneMock', { y: '4vh', rotate: 9, ease: 'none' }, 0.7);
+
+        /* ---------- 4 · manifesto ---------- */
+        const messyStarts = [
+          { x: '-36vw', y: '-28vh', rotate: -18, scale: 0.78 },
+          { x: '26vw', y: '-34vh', rotate: 14, scale: 0.6 },
+          { x: '-12vw', y: '32vh', rotate: 24, scale: 0.72 },
+          { x: '36vw', y: '26vh', rotate: -22, scale: 0.68 },
+          { x: '-42vw', y: '8vh', rotate: 10, scale: 0.58 },
+          { x: '18vw', y: '-10vh', rotate: -12, scale: 0.78 },
+          { x: '-22vw', y: '-3vh', rotate: 28, scale: 0.62 },
+          { x: '42vw', y: '-4vh', rotate: -8, scale: 0.72 },
+          { x: '-30vw', y: '24vh', rotate: -16, scale: 0.64 },
+          { x: '30vw', y: '30vh', rotate: 18, scale: 0.7 }
+        ];
+
+        gsap.set('.manifesto-word', {
+          x: (i) => messyStarts[i].x,
+          y: (i) => messyStarts[i].y,
+          rotate: (i) => messyStarts[i].rotate,
+          scale: (i) => messyStarts[i].scale
+        });
+
+        const manifestoTimeline = gsap.timeline({
+          scrollTrigger: { trigger: '#manifesto', start: 'top top', end: '+=170%', scrub: 1, pin: true }
+        });
+        manifestoTimeline
+          .to('.manifesto-word', { x: 0, y: 0, rotate: 0, scale: 1, stagger: 0.025, ease: 'none' }, 0)
+          .fromTo('#finallyWord', { autoAlpha: 0, x: '-20vw', rotate: -30, scale: 0.5 }, { autoAlpha: 1, x: 0, rotate: -12, scale: 1, ease: 'none' }, 0.55);
+
+        /* ---------- 5 · templates ---------- */
+        gsap.from('.template-card', {
+          scrollTrigger: { trigger: '#archive', start: 'top 78%' },
+          y: 55, autoAlpha: 0, stagger: 0.1, duration: 0.75, ease: 'power3.out'
+        });
+        gsap.fromTo('#archiveWord', { y: '6vh' }, { y: '-6vh', ease: 'none',
+          scrollTrigger: { trigger: '#archive', start: 'top bottom', end: 'bottom top', scrub: 1 }
+        });
+
+        /* ---------- pricing ---------- */
+        gsap.from('.pricing-card', {
+          scrollTrigger: { trigger: '#pricing', start: 'top 75%' },
+          y: 48, autoAlpha: 0, stagger: 0.1, duration: 0.7, ease: 'power3.out'
+        });
+
+        /* ---------- 6 · builder ---------- */
+        const builderTimeline = gsap.timeline({
+          scrollTrigger: { trigger: '#builder', start: 'top top', end: '+=180%', scrub: 1, pin: true }
+        });
+        builderTimeline
+          .fromTo('#builderCard', { x: '38vw', rotate: 8, scale: 0.9 }, { x: 0, rotate: 0, scale: 1, ease: 'none' }, 0)
+          .fromTo('#buildWord', { x: '-8vw', y: '7vh' }, { x: '3vw', y: '-5vh', ease: 'none' }, 0)
+          .from('.builder-module', {
+            x: (i) => [140, -120, 90, -70, 110][i] || 80,
+            y: (i) => [-40, 50, 20, -20, 40][i] || 20,
+            autoAlpha: 0,
+            scale: 0.92,
+            stagger: 0.12,
+            ease: 'none'
+          }, 0.18);
+
+        /* ---------- 7 · board ---------- */
+        const boardTimeline = gsap.timeline({
+          scrollTrigger: { trigger: '#board', start: 'top top', end: '+=170%', scrub: 1, pin: true }
+        });
+        boardTimeline
+          .fromTo('.op-card', {
+            x: (i) => [-260, 80, 240, -120, 180, -200, 130][i] || 0,
+            y: (i) => [-120, 180, -80, 150, -150, 110, 200][i] || 0,
+            rotate: (i) => [-16, 12, -9, 18, -14, 8, 15][i] || 0,
+            scale: 0.86,
+            autoAlpha: 0.35
+          }, {
+            x: 0,
+            y: 0,
+            rotate: 0,
+            scale: 1,
+            autoAlpha: 1,
+            stagger: 0.035,
+            ease: 'none'
+          }, 0)
+          .fromTo('#boardWord', { xPercent: -58, yPercent: -50, rotate: -4 }, { xPercent: -48, yPercent: -50, rotate: 3, ease: 'none' }, 0);
+
+        /* ---------- 8 · support flow ---------- */
+        const supportTimeline = gsap.timeline({
+          scrollTrigger: { trigger: '#support', start: 'top top', end: '+=170%', scrub: 1, pin: true }
+        });
+        supportTimeline
+          .fromTo('.support-step:nth-child(1)', { x: '-50vw', y: '8vh', rotate: -9, autoAlpha: 0 }, { x: 0, y: 0, rotate: 0, autoAlpha: 1, ease: 'none' }, 0)
+          .fromTo('.support-step:nth-child(2)', { scale: 0.62, y: '18vh', autoAlpha: 0 }, { scale: 1, y: 0, autoAlpha: 1, ease: 'none' }, 0.18)
+          .fromTo('.support-step:nth-child(3)', { x: '50vw', y: '-8vh', rotate: 9, autoAlpha: 0 }, { x: 0, y: 0, rotate: 0, autoAlpha: 1, ease: 'none' }, 0.36)
+          .fromTo('#notifyCard', { x: '34vw', y: '10vh', rotate: 8, scale: 0.82, autoAlpha: 0 }, { x: 0, y: 0, rotate: -2, scale: 1, autoAlpha: 1, ease: 'none' }, 0.62)
+          .fromTo('#supportWord', { y: '8vh', scale: 1.1 }, { y: '-7vh', scale: 0.98, ease: 'none' }, 0);
+
+        /* ---------- 9 · CTA build-up ---------- */
+        const ctaBuildTimeline = gsap.timeline({
+          scrollTrigger: { trigger: '#cta-build', start: 'top top', end: '+=160%', scrub: 1, pin: true }
+        });
+        ctaBuildTimeline
+          .fromTo('#seenWord', { x: '-110vw', autoAlpha: 1 }, { x: 0, autoAlpha: 1, ease: 'none' }, 0)
+          .to('#seenWord', { x: '110vw', autoAlpha: 0, ease: 'none' }, 0.32)
+          .to('#wipeRose', { scaleY: 1, ease: 'none' }, 0.24)
+          .fromTo('#savedWord', { y: '110vh', autoAlpha: 1 }, { y: 0, autoAlpha: 1, ease: 'none' }, 0.34)
+          .to('#savedWord', { y: '-110vh', autoAlpha: 0, ease: 'none' }, 0.64)
+          .to('#wipeEmerald', { scaleX: 1, ease: 'none' }, 0.58)
+          .fromTo('#supportedWord', { x: '120vw', autoAlpha: 1 }, { x: 0, autoAlpha: 1, ease: 'none' }, 0.68)
+          .to('#supportedWord', { scale: 1.12, autoAlpha: 0, ease: 'none' }, 0.96);
+
+        /* ---------- 10 · contact ---------- */
+        gsap.fromTo('#contactWord',
+          { y: '8vh' },
+          { y: '-8vh', ease: 'none',
+            scrollTrigger: { trigger: '#join', start: 'top bottom', end: 'bottom top', scrub: 1 }
+          }
+        );
+        gsap.from('#contactForm',
+          { y: 60, autoAlpha: 0, duration: 0.9, ease: 'power3.out',
+            scrollTrigger: { trigger: '#contactForm', start: 'top 85%' }
+          }
+        );
+
+        gsap.to('#card2', { y: '+=10', repeat: -1, yoyo: true, duration: 2.4, ease: 'sine.inOut' });
+
+        /* ---------- About section - word-by-word scroll reveal ---------- */
+        const aboutWords = gsap.utils.toArray('.about-word');
+        gsap.set(aboutWords, { opacity: 0, y: 22 });
+        gsap.set('#aboutLabel', { opacity: 0, y: 10 });
+        gsap.set('#aboutStats', { opacity: 0, y: 28 });
+
+        // CSS sticky handles the visual lock; GSAP scrubs across the section's
+        // natural 600vh height so later sections never bleed through.
+        const aboutTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: '#about',
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: 0.8
+          }
+        });
+
+        aboutTl
+          .to('#aboutLabel', { opacity: 1, y: 0, ease: 'none', duration: 0.05 }, 0)
+          .to(aboutWords, {
+            opacity: 1,
+            y: 0,
+            stagger: { each: 0.03, from: 'start' },
+            ease: 'none',
+            duration: 0.05
+          }, 0.06)
+          .to('#aboutStats', { opacity: 1, y: 0, ease: 'none', duration: 0.12 }, '+=0.15');
+
+        /* ---------- Testimonials ---------- */
+        gsap.from('.testimonial-card', {
+          scrollTrigger: { trigger: '#testimonials', start: 'top 78%' },
+          y: 55, autoAlpha: 0, stagger: 0.14, duration: 0.75, ease: 'power3.out'
+        });
+
+        /* ---------- Contact form ---------- */
+        gsap.from('#contactForm', {
+          scrollTrigger: { trigger: '#contactForm', start: 'top 82%' },
+          y: 40, autoAlpha: 0, duration: 0.7, ease: 'power3.out'
+        });
+
+        ScrollTrigger.refresh();
+      }
+
+      /* ---------- Mobile menu ---------- */
+      const mobileMenu = document.querySelector('#mobileMenu');
+      const mobileMenuOpen = document.querySelector('[aria-label="Open menu"]');
+      const mobileMenuClose = document.querySelector('#mobileMenuClose');
+
+      const openMobileMenu = () => {
+        gsap.set(mobileMenu, { pointerEvents: 'auto' });
+        gsap.to(mobileMenu, { opacity: 1, duration: 0.32, ease: 'power2.out' });
+        gsap.from('.mobile-menu-link', {
+          y: 28, autoAlpha: 0, stagger: 0.06, duration: 0.48, ease: 'power3.out'
+        });
+      };
+
+      const closeMobileMenu = () => {
+        gsap.to(mobileMenu, {
+          opacity: 0, duration: 0.22, ease: 'power2.in',
+          onComplete: () => gsap.set(mobileMenu, { pointerEvents: 'none' })
+        });
+      };
+
+      mobileMenuOpen?.addEventListener('click', openMobileMenu);
+      mobileMenuClose?.addEventListener('click', closeMobileMenu);
+      document.querySelectorAll('.mobile-menu-link').forEach(link =>
+        link.addEventListener('click', closeMobileMenu)
+      );
+
+      /* ---------- Case study modal ---------- */
+      const csModal   = document.querySelector('#caseStudyModal');
+      const csBackdrop = document.querySelector('#csBackdrop');
+      const csPanel   = document.querySelector('#csPanel');
+
+      function openCaseStudy() {
+        csModal.style.pointerEvents = 'auto';
+        csModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        gsap.to(csBackdrop, { opacity: 1, duration: 0.35, ease: 'power2.out' });
+        gsap.to(csPanel,    { x: 0,       duration: 0.52, ease: 'expo.out' });
+        lucide.createIcons();
+      }
+
+      function closeCaseStudy() {
+        gsap.to(csPanel,    { x: '100%',  duration: 0.42, ease: 'expo.in' });
+        gsap.to(csBackdrop, { opacity: 0, duration: 0.35, ease: 'power2.in',
+          onComplete: () => {
+            csModal.style.pointerEvents = 'none';
+            csModal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            csPanel.scrollTop = 0;
+          }
+        });
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') { closeCaseStudy(); closeRGCaseStudy(); closeRFCaseStudy(); }
+      });
+
+      /* ---------- Rolling Fitness case study modal ---------- */
+      const rfModal    = document.querySelector('#rfModal');
+      const rfBackdrop = document.querySelector('#rfBackdrop');
+      const rfPanel    = document.querySelector('#rfPanel');
+
+      function openRFCaseStudy() {
+        rfModal.style.pointerEvents = 'auto';
+        rfModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        gsap.to(rfBackdrop, { opacity: 1, duration: 0.35, ease: 'power2.out' });
+        gsap.to(rfPanel,    { x: 0,       duration: 0.52, ease: 'expo.out' });
+        lucide.createIcons();
+      }
+
+      function closeRFCaseStudy() {
+        gsap.to(rfPanel,    { x: '100%',  duration: 0.42, ease: 'expo.in' });
+        gsap.to(rfBackdrop, { opacity: 0, duration: 0.35, ease: 'power2.in',
+          onComplete: () => {
+            rfModal.style.pointerEvents = 'none';
+            rfModal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            rfPanel.scrollTop = 0;
+          }
+        });
+      }
+
+      /* ---------- Red Ginger case study modal ---------- */
+      const rgModal    = document.querySelector('#rgModal');
+      const rgBackdrop = document.querySelector('#rgBackdrop');
+      const rgPanel    = document.querySelector('#rgPanel');
+
+      function openRGCaseStudy() {
+        rgModal.style.pointerEvents = 'auto';
+        rgModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        gsap.to(rgBackdrop, { opacity: 1, duration: 0.35, ease: 'power2.out' });
+        gsap.to(rgPanel,    { x: 0,       duration: 0.52, ease: 'expo.out' });
+        lucide.createIcons();
+      }
+
+      function closeRGCaseStudy() {
+        gsap.to(rgPanel,    { x: '100%',  duration: 0.42, ease: 'expo.in' });
+        gsap.to(rgBackdrop, { opacity: 0, duration: 0.35, ease: 'power2.in',
+          onComplete: () => {
+            rgModal.style.pointerEvents = 'none';
+            rgModal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            rgPanel.scrollTop = 0;
+          }
+        });
+      }
+
+      /* ---------- Contact form ---------- */
+      async function handleFormSubmit(e) {
+        e.preventDefault();
+        const form = e.target;
+        const btn = document.querySelector('#formSubmitBtn');
+        const success = document.querySelector('#formSuccess');
+
+        btn.querySelector('span, i') && null;
+        btn.innerHTML = 'Sending…';
+        btn.disabled = true;
+
+        try {
+          const res = await fetch('https://formsubmit.co/ajax/makalsicreativestudios@gmail.com', {
+            method: 'POST',
+            headers: { 'Accept': 'application/json' },
+            body: new FormData(form)
+          });
+          if (res.ok) {
+            btn.classList.add('hidden');
+            success.classList.remove('hidden');
+            form.reset();
+          } else {
+            throw new Error('Network response not ok');
+          }
+        } catch (_) {
+          btn.innerHTML = 'Send <i data-lucide="arrow-right" class="w-4 h-4" style="display:inline"></i>';
+          btn.disabled = false;
+          success.textContent = 'Something went wrong. Email us directly at makalsicreativestudios@gmail.com';
+          success.classList.remove('hidden');
+        }
+      }
+
+      /* re-init lucide icons for mobile menu */
+      lucide.createIcons();
+    </script>
+  </body>
+</html>
