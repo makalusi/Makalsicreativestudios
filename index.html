@@ -3077,6 +3077,69 @@ gtag('config', 'G-2M6V79H761');
         }
       }
 
+      /* ── Mobile hero card cycling ────────────────────────────────────────── */
+      (function () {
+        if (window.innerWidth >= 640) return;
+
+        const cardEls = [
+          document.getElementById('card1'),
+          document.getElementById('card2'),
+          document.getElementById('card3'),
+        ];
+
+        // order[slotIdx] = cardIdx  →  slots: 0=left, 1=centre, 2=right
+        let order = [0, 1, 2];
+
+        const slots = [
+          { x: -90, rotationY:  22, rotation: -8, scale: 0.87, zIndex: 5  },
+          { x:   0, rotationY:  -4, rotation:  2, scale: 1.00, zIndex: 10 },
+          { x:  90, rotationY: -22, rotation:  9, scale: 0.87, zIndex: 5  },
+        ];
+
+        // Build dot strip first so place() can read dotEls
+        const strip = document.createElement('div');
+        strip.style.cssText = 'position:absolute;bottom:74px;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:20;pointer-events:none;';
+        const dotEls = [0, 1, 2].map(() => {
+          const d = document.createElement('span');
+          d.style.cssText = 'display:block;width:6px;height:6px;border-radius:50%;transition:background .3s;';
+          strip.appendChild(d);
+          return d;
+        });
+        document.getElementById('hero').appendChild(strip);
+
+        function place(animate) {
+          order.forEach((cardIdx, slotIdx) => {
+            const el = cardEls[cardIdx];
+            const s  = slots[slotIdx];
+            const props = { x: s.x, rotationY: s.rotationY, rotation: s.rotation, scale: s.scale, zIndex: s.zIndex };
+            if (animate) gsap.to(el,  { ...props, duration: 0.42, ease: 'power2.inOut' });
+            else         gsap.set(el, props);
+            // Disable inner links/buttons on side cards so taps reach the article
+            el.querySelectorAll('a, button').forEach(n => {
+              n.style.pointerEvents = slotIdx === 1 ? '' : 'none';
+            });
+          });
+          dotEls.forEach((d, i) => {
+            d.style.background = order[1] === i ? 'white' : 'rgba(255,255,255,0.4)';
+          });
+        }
+
+        cardEls.forEach((el, cardIdx) => {
+          el.addEventListener('click', e => {
+            const slotIdx = order.indexOf(cardIdx);
+            if (slotIdx === 1) return; // centre card — let links fire normally
+            e.preventDefault();
+            e.stopPropagation();
+            order = slotIdx === 0
+              ? [order[2], order[0], order[1]]  // left tapped → shift left
+              : [order[1], order[2], order[0]]; // right tapped → shift right
+            place(true);
+          });
+        });
+
+        place(false);
+      })();
+
       /* re-init lucide icons for mobile menu */
       lucide.createIcons();
     </script>
